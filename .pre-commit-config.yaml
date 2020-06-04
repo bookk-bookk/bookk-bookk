@@ -13,6 +13,14 @@ repos:
     rev: 19.10b0
     hooks:
       - id: black
-        name: formatting python code with black
+        name: Formatting python code with black
         language_version: python3.7
         args: [--line-length=120]
+
+-   repo: https://github.com/PyCQA/flake8
+    rev: 3.8.2
+    hooks:
+      - id: flake8
+        name: Inspect python code with flake8
+        language_version: python3.7
+        args: [--ignore=E501, --max-complexity=10]
