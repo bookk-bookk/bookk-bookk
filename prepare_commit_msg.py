@@ -1,5 +1,3 @@
-#!/usr/local/bin/python3.7
-
 import re
 import subprocess
 import sys
