@@ -10,5 +10,12 @@ $ pyenv activate bookk-bookk
 ```
 3. pip 패키지를 설치하세요.
 ```
-$ pip install -r requirements.txt
+$ pip install -r requirements/local.txt
+```
+
+4. git hook을 설정하세요.
+```
+$ pre-commit install
+$ pre-commit install -t prepare-commit-msg
+
 ```
