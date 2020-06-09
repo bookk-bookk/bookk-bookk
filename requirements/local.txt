@@ -1,3 +1,4 @@
+-r prod.txt
 appdirs==1.4.4
 cfgv==3.1.0
 distlib==0.3.0
