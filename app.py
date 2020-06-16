@@ -1,13 +1,18 @@
 import os
+import json
 from typing import Optional
 
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Request
 from slack import WebClient
+from starlette.datastructures import FormData
 
 app = FastAPI()
 
 slack_token: Optional[str] = os.environ.get("SLACK_API_TOKEN")
 slack_client = WebClient(token=slack_token, run_async=True)
+
+DIALOG_SUBMIT_DONE: str = "dialog_submission"
+DIALOG_SUBMIT_CANCELLED: str = "dialog_cancellation"
 
 # fmt: off
 DIALOG_FORMAT: dict = {
@@ -50,6 +55,31 @@ DIALOG_FORMAT: dict = {
 
 
 @app.post("/open-form/")
-async def open_form(trigger_id: str = Form("")) -> str:
-    await slack_client.dialog_open(dialog=DIALOG_FORMAT, trigger_id=trigger_id)  # type: ignore
-    return "created"
+async def open_form(request: Request) -> str:
+    form_data: FormData = await request.form()
+    await slack_client.dialog_open(dialog=DIALOG_FORMAT, trigger_id=form_data.get("trigger_id"))  # type: ignore
+    return "dialog opened"
+
+
+@app.post("/submit-book/")
+async def submit_book(request: Request) -> str:
+    form_data: FormData = await request.form()
+    payload: dict = json.loads(form_data.get("payload"))
+
+    if payload.get("type") == DIALOG_SUBMIT_DONE:
+        book: dict = payload["submission"]
+        await slack_client.chat_postMessage(  # type: ignore
+            channel=payload["channel"]["id"],
+            text=f"""
+            북크북크에 추천도서를 공유했습니다.
+            {book['book_name']} ({book['categories']}, {book['publisher']} 출판, {book['author']} 저)
+            {book['link']}
+            {book['recommend_reason']}
+            """,
+        )
+        return "created"
+
+    if payload.get("type") == DIALOG_SUBMIT_CANCELLED:
+        return "cancelled"
+
+    return "not allowed"
