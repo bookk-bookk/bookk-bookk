@@ -15,7 +15,6 @@ DIALOG_FORMAT: dict = {
     "title": "책을 공유해주세요.",
     "submit_label": "submit",
     "notify_on_cancel": True,
-    "state": "Limo",
     "elements": [
         {"label": "책 이름", "name": "book_name", "type": "text", },
         {
