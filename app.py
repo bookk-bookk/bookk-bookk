@@ -56,14 +56,14 @@ DIALOG_FORMAT: dict = {
 
 
 @app.post("/open-form/")
-async def open_form(request: Request) -> str:
+async def open_form(request: Request) -> Response:
     form_data: FormData = await request.form()
     response: SlackResponse = await slack_client.dialog_open(  # type: ignore
         dialog=DIALOG_FORMAT, trigger_id=form_data.get("trigger_id"),
     )
     if response["ok"]:
-        return "dialog opened"
-    return response["error"]
+        return Response()
+    return Response(content=response["error"])
 
 
 @app.post("/submit-book/")
