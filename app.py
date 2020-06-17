@@ -3,7 +3,7 @@ import json
 from textwrap import dedent
 from typing import Optional
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from slack import WebClient
 from slack.web.slack_response import SlackResponse
 from starlette.datastructures import FormData
@@ -14,7 +14,6 @@ slack_token: Optional[str] = os.environ.get("SLACK_API_TOKEN")
 slack_client = WebClient(token=slack_token, run_async=True)
 
 DIALOG_SUBMIT_DONE: str = "dialog_submission"
-DIALOG_SUBMIT_CANCELLED: str = "dialog_cancellation"
 
 # fmt: off
 DIALOG_FORMAT: dict = {
@@ -68,7 +67,7 @@ async def open_form(request: Request) -> str:
 
 
 @app.post("/submit-book/")
-async def submit_book(request: Request) -> str:
+async def submit_book(request: Request) -> Response:
     form_data: FormData = await request.form()
     payload: dict = json.loads(form_data.get("payload"))
 
@@ -85,9 +84,5 @@ async def submit_book(request: Request) -> str:
             {recommend_reason}"""
             ),
         )
-        return "created"
 
-    if payload.get("type") == DIALOG_SUBMIT_CANCELLED:
-        return "cancelled"
-
-    return "not allowed"
+    return Response(status_code=200)
