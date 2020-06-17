@@ -1,5 +1,6 @@
 import os
 import json
+from http import HTTPStatus
 from textwrap import dedent
 from typing import Optional
 
@@ -74,7 +75,7 @@ async def submit_book(request: Request) -> Response:
     if payload.get("type") == DIALOG_SUBMIT_DONE:
         book: dict = payload["submission"]
         recommend_reason: str = book["recommend_reason"].replace("\n", " ")
-        await slack_client.chat_postMessage(  # type: ignore
+        response: SlackResponse = await slack_client.chat_postMessage(  # type: ignore
             channel=payload["channel"]["id"],
             text=dedent(
                 f"""
@@ -84,5 +85,8 @@ async def submit_book(request: Request) -> Response:
             {recommend_reason}"""
             ),
         )
+        if response["ok"]:
+            return Response()
+        return Response(content=response["error"])
 
-    return Response(status_code=200)
+    return Response(status_code=HTTPStatus.BAD_REQUEST)
