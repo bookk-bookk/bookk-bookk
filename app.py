@@ -5,6 +5,7 @@ from typing import Optional
 
 from fastapi import FastAPI, Request
 from slack import WebClient
+from slack.web.slack_response import SlackResponse
 from starlette.datastructures import FormData
 
 app = FastAPI()
@@ -58,8 +59,12 @@ DIALOG_FORMAT: dict = {
 @app.post("/open-form/")
 async def open_form(request: Request) -> str:
     form_data: FormData = await request.form()
-    await slack_client.dialog_open(dialog=DIALOG_FORMAT, trigger_id=form_data.get("trigger_id"))  # type: ignore
-    return "dialog opened"
+    response: SlackResponse = await slack_client.dialog_open(  # type: ignore
+        dialog=DIALOG_FORMAT, trigger_id=form_data.get("trigger_id"),
+    )
+    if response["ok"]:
+        return "dialog opened"
+    return response["error"]
 
 
 @app.post("/submit-book/")
