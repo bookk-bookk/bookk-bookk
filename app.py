@@ -1,5 +1,6 @@
 import os
 import json
+from textwrap import dedent
 from typing import Optional
 
 from fastapi import FastAPI, Request
@@ -68,14 +69,16 @@ async def submit_book(request: Request) -> str:
 
     if payload.get("type") == DIALOG_SUBMIT_DONE:
         book: dict = payload["submission"]
+        recommend_reason: str = book["recommend_reason"].replace("\n", " ")
         await slack_client.chat_postMessage(  # type: ignore
             channel=payload["channel"]["id"],
-            text=f"""
-            북크북크에 추천도서를 공유했습니다.
+            text=dedent(
+                f"""
+            📖 북크북크에 추천도서를 공유했습니다 📖
             {book['book_name']} ({book['categories']}, {book['publisher']} 출판, {book['author']} 저)
             {book['link']}
-            {book['recommend_reason']}
-            """,
+            {recommend_reason}"""
+            ),
         )
         return "created"
 
