@@ -1,7 +1,6 @@
 import os
 import json
 from http import HTTPStatus
-from textwrap import dedent
 from typing import Optional
 
 from fastapi import FastAPI, Request, Response
@@ -26,7 +25,7 @@ DIALOG_FORMAT: dict = {
         {"label": "책 이름", "name": "book_name", "type": "text", },
         {
             "label": "카테고리",
-            "name": "categories",
+            "name": "category",
             "type": "select",
             "option_groups": [
                 {
@@ -55,6 +54,13 @@ DIALOG_FORMAT: dict = {
 }
 # fmt: on
 
+SUCCESS_MESSAGE = """
+📖 {username}님의 추천도서를 공유했습니다 📖
+{book_name} ({category}, {publisher} 출판, {author} 저)
+{link}
+{recommend_reason}
+"""
+
 
 @app.post("/open-form/")
 async def open_form(request: Request) -> Response:
@@ -74,16 +80,8 @@ async def submit_book(request: Request) -> Response:
 
     if payload.get("type") == DIALOG_SUBMIT_DONE:
         book: dict = payload["submission"]
-        recommend_reason: str = book["recommend_reason"].replace("\n", " ")
         response: SlackResponse = await slack_client.chat_postMessage(  # type: ignore
-            channel=payload["channel"]["id"],
-            text=dedent(
-                f"""
-            📖 북크북크에 추천도서를 공유했습니다 📖
-            {book['book_name']} ({book['categories']}, {book['publisher']} 출판, {book['author']} 저)
-            {book['link']}
-            {recommend_reason}"""
-            ),
+            channel=payload["channel"]["id"], text=SUCCESS_MESSAGE.format(**book, username=payload["user"]["name"]),
         )
         if response["ok"]:
             return Response()
