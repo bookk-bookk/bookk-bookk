@@ -54,7 +54,7 @@ DIALOG_FORMAT: dict = {
 }
 # fmt: on
 
-SUCCESS_MESSAGE = """
+SUCCESS_MESSAGE: str = """
 📖 {username}님의 추천도서를 공유했습니다 📖
 {book_name} ({category}, {publisher} 출판, {author} 저)
 {link}
@@ -80,7 +80,9 @@ async def submit_book(request: Request) -> Response:
 
     if payload.get("type") == DIALOG_SUBMIT_DONE:
 
-        user_profile_res: SlackResponse = await slack_client.users_profile_get(user=payload["user"]["id"])
+        user_profile_res: SlackResponse = await slack_client.users_profile_get(  # type: ignore
+            user=payload["user"]["id"],
+        )
         if not user_profile_res["ok"]:
             return Response(content=user_profile_res["error"])
 
