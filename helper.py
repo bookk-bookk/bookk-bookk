@@ -18,7 +18,7 @@ async def get_og_tags(book_link):
             OPEN_GRAPH_BASE_URL.format(book_link=quote_plus(book_link, encoding="UTF-8")),
             params={"app_id": os.environ.get("OG_APP_ID")},
         ) as response:
-            return await response.json()["openGraph"]
+            return await response.json()
 
 
 notion_client: NotionClient = NotionClient(token_v2=os.environ.get("NOTION_TOKEN_V2"))
@@ -30,14 +30,14 @@ async def post_book_to_notion(book: dict):
     new_row = page.collection.add_row()
 
     new_row.category = book["category"]
-    new_row.title = book["title"]
+    new_row.title = book["book_name"]
     new_row.author = book["author"]
     new_row.publisher = book["publisher"]
     new_row.URL = book["link"]
     new_row.recommend_reason = book["recommend_reason"]
 
-    og_tags = await get_og_tags(book["link"])
+    response = await get_og_tags(book["link"])
     image_block = new_row.children.add_new(ImageBlock)
-    image_block.set_source_url(og_tags["image"])
+    image_block.set_source_url(response["openGraph"]["image"]["url"])
 
     return Future()

@@ -1,3 +1,4 @@
+import asyncio
 import os
 import json
 from http import HTTPStatus
@@ -7,6 +8,8 @@ from fastapi import FastAPI, Request, Response
 from slack import WebClient
 from slack.web.slack_response import SlackResponse
 from starlette.datastructures import FormData
+
+from helper import post_book_to_notion
 
 app = FastAPI()
 
@@ -87,12 +90,16 @@ async def submit_book(request: Request) -> Response:
             return Response(content=user_profile_res["error"])
 
         book: dict = payload["submission"]
+
         post_message_res: SlackResponse = await slack_client.chat_postMessage(  # type: ignore
             channel=payload["channel"]["id"],
             text=SUCCESS_MESSAGE.format(**book, username=user_profile_res["profile"]["real_name"]),
         )
         if not post_message_res["ok"]:
             Response(content=post_message_res["error"])
+
+        asyncio.create_task(post_book_to_notion(book))
+
         return Response()
 
     return Response(status_code=HTTPStatus.BAD_REQUEST)
