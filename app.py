@@ -12,7 +12,7 @@ from slack.web.slack_response import SlackResponse
 from starlette.datastructures import FormData
 
 from helper import post_book_to_notion
-from model import book_dialog_format
+from model import book_dialog_format, Book
 
 app = FastAPI()
 
@@ -54,11 +54,11 @@ async def submit_book(request: Request) -> Response:
     if not user_profile_res["ok"]:
         return Response(content=user_profile_res["error"])
 
-    book: dict = payload["submission"]
+    book: Book = Book(**payload["submission"])
 
     post_message_res: SlackResponse = await slack_client.chat_postMessage(  # type: ignore
         channel=payload["channel"]["id"],
-        text=SUCCESS_MESSAGE.format(**book, username=user_profile_res["profile"]["real_name"]),
+        text=SUCCESS_MESSAGE.format(**asdict(book), username=user_profile_res["profile"]["real_name"]),
     )
     if not post_message_res["ok"]:
         return Response(content=post_message_res["error"])

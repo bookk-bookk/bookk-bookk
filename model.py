@@ -59,3 +59,13 @@ book_dialog_format = DialogFormat(
         DialogElement(label="추천이유", name="recommend_reason", type="textarea"),
     ],
 )
+
+
+@dataclass(repr=True)
+class Book:
+    book_name: str
+    category: str
+    link: str
+    publisher: str
+    author: str
+    recommend_reason: str
