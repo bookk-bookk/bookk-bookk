@@ -45,25 +45,25 @@ async def submit_book(request: Request) -> Response:
     form_data: FormData = await request.form()
     payload: dict = json.loads(form_data.get("payload"))
 
-    if payload.get("type") == DIALOG_SUBMIT_DONE:
+    if payload.get("type") != DIALOG_SUBMIT_DONE:
+        return Response(status_code=HTTPStatus.BAD_REQUEST)
 
-        user_profile_res: SlackResponse = await slack_client.users_profile_get(  # type: ignore
-            user=payload["user"]["id"],
-        )
-        if not user_profile_res["ok"]:
-            return Response(content=user_profile_res["error"])
+    user_profile_res: SlackResponse = await slack_client.users_profile_get(  # type: ignore
+        user=payload["user"]["id"],
+    )
+    if not user_profile_res["ok"]:
+        return Response(content=user_profile_res["error"])
 
-        book: dict = payload["submission"]
+    book: dict = payload["submission"]
 
-        post_message_res: SlackResponse = await slack_client.chat_postMessage(  # type: ignore
-            channel=payload["channel"]["id"],
-            text=SUCCESS_MESSAGE.format(**book, username=user_profile_res["profile"]["real_name"]),
-        )
-        if not post_message_res["ok"]:
-            Response(content=post_message_res["error"])
+    post_message_res: SlackResponse = await slack_client.chat_postMessage(  # type: ignore
+        channel=payload["channel"]["id"],
+        text=SUCCESS_MESSAGE.format(**book, username=user_profile_res["profile"]["real_name"]),
+    )
+    if not post_message_res["ok"]:
+        Response(content=post_message_res["error"])
 
-        asyncio.create_task(post_book_to_notion(book))
+    # posting to notion is intended to run background.
+    asyncio.create_task(post_book_to_notion(book))
 
-        return Response()
-
-    return Response(status_code=HTTPStatus.BAD_REQUEST)
+    return Response()
