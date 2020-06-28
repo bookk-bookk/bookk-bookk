@@ -61,7 +61,7 @@ async def submit_book(request: Request) -> Response:
         text=SUCCESS_MESSAGE.format(**book, username=user_profile_res["profile"]["real_name"]),
     )
     if not post_message_res["ok"]:
-        Response(content=post_message_res["error"])
+        return Response(content=post_message_res["error"])
 
     # posting to notion is intended to run background.
     asyncio.create_task(post_book_to_notion(book))
