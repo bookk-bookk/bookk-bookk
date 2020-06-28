@@ -21,7 +21,7 @@ slack_client = WebClient(token=slack_token, run_async=True)
 
 DIALOG_SUBMIT_DONE: str = "dialog_submission"
 SUCCESS_MESSAGE: str = """
-📖 {username}님의 추천도서를 공유했습니다 📖
+📖 {username} 님이 추천도서를 공유했습니다 📖
 {book_name} ({category}, {publisher} 출판, {author} 저)
 {link}
 {recommend_reason}
