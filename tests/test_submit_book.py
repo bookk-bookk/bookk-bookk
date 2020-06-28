@@ -2,7 +2,7 @@ import json
 from asyncio import Future
 from http import HTTPStatus
 
-import pytest
+import pytest  # type: ignore
 from fastapi.testclient import TestClient
 
 from app import app, slack_client, SUCCESS_MESSAGE
