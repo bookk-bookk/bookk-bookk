@@ -1,6 +1,7 @@
 import asyncio
 import os
 import json
+import uuid
 from dataclasses import asdict
 from http import HTTPStatus
 from typing import Optional
@@ -11,7 +12,7 @@ from slack.web.slack_response import SlackResponse
 from starlette.datastructures import FormData
 
 from helper import post_book_to_notion
-from model import dialog_format
+from model import book_dialog_format
 
 app = FastAPI()
 
@@ -30,8 +31,9 @@ SUCCESS_MESSAGE: str = """
 @app.post("/open-form/")
 async def open_form(request: Request) -> Response:
     form_data: FormData = await request.form()
+    book_dialog_format.callback_id = uuid.uuid4().hex
     response: SlackResponse = await slack_client.dialog_open(  # type: ignore
-        dialog=asdict(dialog_format), trigger_id=form_data.get("trigger_id"),
+        dialog=asdict(book_dialog_format), trigger_id=form_data.get("trigger_id"),
     )
     if response["ok"]:
         return Response()

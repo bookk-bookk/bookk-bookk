@@ -1,5 +1,4 @@
 import enum
-import uuid
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -25,12 +24,12 @@ class DialogElement:
     subtype: Optional[str] = None
 
 
-@dataclass(repr=True)
+@dataclass(repr=True, eq=True)
 class DialogFormat:
     title: str
     elements: List[DialogElement]
     submit_label: str = "submit"
-    callback_id: str = uuid.uuid4().hex
+    callback_id: str = "bookk-bookk"
     notify_on_cancel: bool = True
 
 
@@ -49,13 +48,14 @@ class BookCategories(enum.Enum):
         return options_groups
 
 
-dialog_format = DialogFormat(
+book_dialog_format = DialogFormat(
     title="책을 공유해주세요.",
     elements=[
-        DialogElement(label="책 이름", name="book_name", type="text"),
+        DialogElement(label="책이름", name="book_name", type="text"),
         DialogElement(label="카테고리", name="category", type="select", option_groups=BookCategories.get_option_groups()),
-        DialogElement(label="도서 링크", name="link", type="text", subtype="url"),
+        DialogElement(label="도서링크", name="link", type="text", subtype="url"),
         DialogElement(label="출판사", name="publisher", type="text"),
         DialogElement(label="저자", name="author", type="text"),
+        DialogElement(label="추천이유", name="recommend_reason", type="textarea"),
     ],
 )
