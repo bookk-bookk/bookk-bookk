@@ -34,12 +34,12 @@ class DialogFormat:
     notify_on_cancel: bool = True
 
     @classmethod
-    def get_book_category_ogs(cls):
-        main_categories = BookCategories.get_book_categories()
+    def get_book_category_ogs(cls) -> List[DialogOptionGroup]:
         option_groups = []
-        for c in main_categories:
-            options = [DialogOption(label=sub_c.name, value=sub_c.name) for sub_c in c.sub_categories]
-            group = DialogOptionGroup(label=c.name, options=options)
+        for category in BookCategories:
+            main, subs = category.value
+            options = [DialogOption(label=sub, value=sub) for sub in subs]
+            group = DialogOptionGroup(label=main, options=options)
             option_groups.append(group)
         return option_groups
 
