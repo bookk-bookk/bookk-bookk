@@ -1,5 +1,6 @@
 import os
 
+from dotenv import load_dotenv
 from pydantic import BaseSettings
 
 
@@ -10,4 +11,6 @@ class Settings(BaseSettings):
     notion_page_url: str = os.getenv("NOTION_PAGE_URL")
 
 
+env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+load_dotenv(dotenv_path=env_path)
 settings = Settings()
