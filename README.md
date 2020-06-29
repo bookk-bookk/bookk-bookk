@@ -19,7 +19,7 @@ $ pre-commit install
 $ pre-commit install -t prepare-commit-msg
 ```
 
-5. uvicorn을 실행하세요.
+5. gunicorn을 실행하세요.
 ```
-$ uvicorn app:app --port 8888
+$ gunicorn -c gunicorn.ini app:app
 ```
