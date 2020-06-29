@@ -33,12 +33,22 @@ class DialogFormat:
     callback_id: str = "bookk-bookk"
     notify_on_cancel: bool = True
 
+    @classmethod
+    def get_book_category_ogs(cls):
+        main_categories = BookCategories.get_book_categories()
+        option_groups = []
+        for c in main_categories:
+            options = [DialogOption(label=sub_c.name, value=sub_c.name) for sub_c in c.sub_categories]
+            group = DialogOptionGroup(label=c.name, options=options)
+            option_groups.append(group)
+        return option_groups
+
 
 book_dialog_format = DialogFormat(
     title="책을 공유해주세요.",
     elements=[
         DialogElement(label="책이름", name="book_name", type="text"),
-        DialogElement(label="카테고리", name="category", type="select", option_groups=BookCategories.get_option_groups()),
+        DialogElement(label="카테고리", name="category", type="select", option_groups=DialogFormat.get_book_category_ogs()),
         DialogElement(label="도서링크", name="link", type="text", subtype="url"),
         DialogElement(label="출판사", name="publisher", type="text"),
         DialogElement(label="저자", name="author", type="text"),
