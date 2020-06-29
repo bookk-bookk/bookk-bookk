@@ -8,7 +8,7 @@ from urllib.parse import quote_plus
 from notion.block import ImageBlock  # type: ignore
 from notion.client import NotionClient  # type: ignore
 
-from model import Book
+from models.book import Book
 
 OPEN_GRAPH_BASE_URL: str = "https://opengraph.io/api/1.1/site/{book_link}"
 
