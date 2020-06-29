@@ -1,10 +1,8 @@
 import asyncio
-import os
 import json
 import uuid
 from dataclasses import asdict
 from http import HTTPStatus
-from typing import Optional
 
 from fastapi import FastAPI, Request, Response
 from slack import WebClient
@@ -14,10 +12,11 @@ from starlette.datastructures import FormData
 from helper import post_book_to_notion
 from forms.book import Book
 from forms.dialog import book_dialog_format
+from settings import settings
 
 app = FastAPI()
 
-slack_token: Optional[str] = os.environ.get("SLACK_API_TOKEN")
+slack_token: str = settings.slack_api_token
 slack_client = WebClient(token=slack_token, run_async=True)
 
 DIALOG_SUBMIT_DONE: str = "dialog_submission"
