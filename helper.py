@@ -30,7 +30,7 @@ async def post_book_to_notion(book: Book) -> Future:
     page = notion_client.get_collection_view(notion_page_url)
     new_row = page.collection.add_row()
 
-    new_row.category = book.category
+    new_row.category = [book.category, book.parent_category]
     new_row.title = book.book_name
     new_row.author = book.author
     new_row.publisher = book.publisher
