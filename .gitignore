@@ -1,5 +1,6 @@
 .idea/*
 .mypy_cache/
 .python-version
+.env
 /__pycache__/
 */__pycache__/
