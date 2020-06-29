@@ -27,9 +27,3 @@ class Book:
                 if s == self.category:
                     return main
         return None
-
-
-@dataclass(repr=True)
-class Category:
-    name: str
-    parent_category: Optional[Category]
