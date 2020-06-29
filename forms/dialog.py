@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from models.book import BookCategories
+from forms.book import BookCategories
 
 
 @dataclass(repr=True)

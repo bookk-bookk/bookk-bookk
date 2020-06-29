@@ -12,8 +12,8 @@ from slack.web.slack_response import SlackResponse
 from starlette.datastructures import FormData
 
 from helper import post_book_to_notion
-from models.book import Book
-from models.dialog import book_dialog_format
+from forms.book import Book
+from forms.dialog import book_dialog_format
 
 app = FastAPI()
 

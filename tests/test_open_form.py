@@ -7,7 +7,7 @@ import pytest  # type: ignore
 
 from fastapi.testclient import TestClient
 from app import app, slack_client
-from models.dialog import DialogFormat
+from forms.dialog import DialogFormat
 
 
 client = TestClient(app)
