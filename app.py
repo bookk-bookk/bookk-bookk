@@ -64,6 +64,7 @@ async def submit_book(request: Request) -> Response:
         return Response(content=post_message_res["error"])
 
     # posting to notion is intended to run background.
-    asyncio.create_task(post_book_to_notion(book))
+    event_loop = asyncio.get_event_loop()
+    event_loop.call_later(0, post_book_to_notion, book)
 
     return Response()
