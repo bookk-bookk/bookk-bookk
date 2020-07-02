@@ -1,0 +1,6 @@
+fastapi:
+  image: kde6260/bookk-bookk:$BOOKK_BOOKK_VERSION
+  ports:
+    - 8000:8000
+  volumes:
+    - /home/ubuntu/bookk-bookk/.env:/home/bookk-bookk/.env
