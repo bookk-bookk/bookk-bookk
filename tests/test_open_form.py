@@ -155,50 +155,39 @@ def mock_uuid():
 
 
 @pytest.fixture
-def mock_dialog_open_success():
+def mock_dialog_open(response):
     class TestArgs:
         def __call__(self, *args, **kwargs):
             self.args = list(args)
             self.kwargs = kwargs
             f = Future()
-            f.set_result({"ok": True})
+            f.set_result(response)
             return f
 
     return TestArgs()
 
 
-@pytest.fixture
-def mock_dialog_open_fail():
-    class TestArgs:
-        def __call__(self, *args, **kwargs):
-            self.args = list(args)
-            self.kwargs = kwargs
-            f = Future()
-            f.set_result({"ok": False, "error": "some-error"})
-            return f
-
-    return TestArgs()
-
-
-def test_open_form_succeed(monkeypatch, dialog_form_data, dialog_format, mock_uuid, mock_dialog_open_success):
-    monkeypatch.setattr(slack_client, "dialog_open", mock_dialog_open_success)
+@pytest.mark.parametrize("response", [{"ok": True}])
+def test_open_form_succeed(monkeypatch, dialog_form_data, dialog_format, mock_uuid, mock_dialog_open):
+    monkeypatch.setattr(slack_client, "dialog_open", mock_dialog_open)
     monkeypatch.setattr(uuid, "UUID", mock_uuid)
 
     response = client.post("/open-form/", data=dialog_form_data)
 
-    assert mock_dialog_open_success.kwargs["trigger_id"] == dialog_form_data["trigger_id"]
-    assert DialogFormat(**mock_dialog_open_success.kwargs["dialog"]) == DialogFormat(**dialog_format)
+    assert mock_dialog_open.kwargs["trigger_id"] == dialog_form_data["trigger_id"]
+    assert DialogFormat(**mock_dialog_open.kwargs["dialog"]) == DialogFormat(**dialog_format)
 
     assert response.status_code == HTTPStatus.OK
 
 
-def test_open_form_fail(monkeypatch, dialog_form_data, dialog_format, mock_uuid, mock_dialog_open_fail):
-    monkeypatch.setattr(slack_client, "dialog_open", mock_dialog_open_fail)
+@pytest.mark.parametrize("response", [{"ok": False, "error": "some-error"}])
+def test_open_form_fail(monkeypatch, dialog_form_data, dialog_format, mock_uuid, mock_dialog_open):
+    monkeypatch.setattr(slack_client, "dialog_open", mock_dialog_open)
     monkeypatch.setattr(uuid, "UUID", mock_uuid)
 
     response = client.post("/open-form/", data=dialog_form_data)
 
-    assert mock_dialog_open_fail.kwargs["trigger_id"] == dialog_form_data["trigger_id"]
-    assert DialogFormat(**mock_dialog_open_fail.kwargs["dialog"]) == DialogFormat(**dialog_format)
+    assert mock_dialog_open.kwargs["trigger_id"] == dialog_form_data["trigger_id"]
+    assert DialogFormat(**mock_dialog_open.kwargs["dialog"]) == DialogFormat(**dialog_format)
     assert response.status_code == HTTPStatus.OK
     assert response.content.decode() == "some-error"
