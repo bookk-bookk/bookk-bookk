@@ -31,17 +31,85 @@ def dialog_format():
                     {
                         "label": "경영/경제",
                         "options": [
-                            {"label": "경영일반", "value": "경영일반", },
-                            {"label": "경제일반", "value": "경제일반", },
-                            {"label": "마케팅세일즈", "value": "마케팅세일즈", },
+                            {"label": c, "value": c, }
+                            for c in ("경영일반", "경제일반", "통계/회계", "마케팅/세일즈", "기업경영/리더십", "재테크/금융/부동산")
                         ],
                     },
                     {
-                        "label": "인문/사회/역사",
+                        "label": "인문/사회",
                         "options": [
-                            {"label": "인문", "value": "인문", },
-                            {"label": "정치/사회", "value": "정치/사회", },
-                            {"label": "예술/문화", "value": "예술/문화", },
+                            {"label": c, "value": c, }
+                            for c in ("사회일반", "인문일반", "페미니즘", "외교/정치", "인권/사회", "역사/문학")
+                        ],
+                    },
+                    {
+                        "label": "예술/문화",
+                        "options": [
+                            {"label": c, "value": c, }
+                            for c in ("미술", "음악", "건축", "무용", "사진", "영화", "만화", "디자인")
+                        ],
+                    },
+                    {
+                        "label": "자기계발",
+                        "options": [
+                            {"label": c, "value": c, }
+                            for c in ("취업/칭업", "삶의 자세", "기획/리더십", "설득/화술/협상", "인간관계/처세술")
+                        ],
+                    },
+                    {
+                        "label": "시/에세이",
+                        "options": [
+                            {"label": c, "value": c, }
+                            for c in ("시", "에세이")
+                        ],
+                    },
+                    {
+                        "label": "소설",
+                        "options": [
+                            {"label": c, "value": c, }
+                            for c in ("고전", "현대", "역사", "동화", "판타지", "SF")
+                        ],
+                    },
+                    {
+                        "label": "여행",
+                        "options": [
+                            {"label": c, "value": c, }
+                            for c in ("국내", "해외")
+                        ],
+                    },
+                    {
+                        "label": "종교",
+                        "options": [
+                            {"label": c, "value": c, }
+                            for c in ("종교일반", "불교", "개신교", "천주교", "힌두교", "가톨릭교", "이슬람교", "기타")
+                        ],
+                    },
+                    {
+                        "label": "외국어",
+                        "options": [
+                            {"label": c, "value": c, }
+                            for c in ("영어일반", "어학시험", "생활영어", "비즈니스영어", "기타")
+                        ],
+                    },
+                    {
+                        "label": "수학/과학/공학",
+                        "options": [
+                            {"label": c, "value": c, }
+                            for c in ("수학", "공학", "자연과학", "응용과학")
+                        ],
+                    },
+                    {
+                        "label": "컴퓨터/IT",
+                        "options": [
+                            {"label": c, "value": c, }
+                            for c in ("IT자격증", "IT비즈니스", "컴퓨터공학/이론", "개발/프로그래밍")
+                        ],
+                    },
+                    {
+                        "label": "건강/취미",
+                        "options": [
+                            {"label": c, "value": c, }
+                            for c in ("생활습관", "음식/요리", "운동/스포츠", "기타")
                         ],
                     },
                 ],
@@ -120,6 +188,7 @@ def test_open_form_succeed(monkeypatch, dialog_form_data, dialog_format, mock_uu
 
     assert mock_dialog_open_success.kwargs["trigger_id"] == dialog_form_data["trigger_id"]
     assert DialogFormat(**mock_dialog_open_success.kwargs["dialog"]) == DialogFormat(**dialog_format)
+
     assert response.status_code == HTTPStatus.OK
 
 
