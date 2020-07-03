@@ -117,12 +117,13 @@ POST_MESSAGE_FAIL_BODY = {
 
 @pytest.mark.parametrize("user_profile", [USER_PROFILE_SUCCESS_BODY])
 @pytest.mark.parametrize("post_result", [POST_MESSAGE_SUCCESS_BODY])
-def test_submit_book_succeed(monkeypatch, submit_form_data, mock_user_profile_get, mock_post_message):
+def test_submit_book_succeed(mocker, monkeypatch, submit_form_data, mock_user_profile_get, mock_post_message):
+    mocker.patch("helper.post_book_to_notion")
     monkeypatch.setattr(slack_client, "users_profile_get", mock_user_profile_get)
     monkeypatch.setattr(slack_client, "chat_postMessage", mock_post_message)
-    payload_from_user = json.loads(submit_form_data["payload"])
 
     response = client.post("/submit-book/", data=submit_form_data)
+    payload_from_user = json.loads(submit_form_data["payload"])
 
     assert mock_user_profile_get.kwargs["user"] == payload_from_user["user"]["id"]
 
