@@ -1,67 +1,52 @@
 import json
 from asyncio import Future
 from http import HTTPStatus
+from unittest.mock import MagicMock
 
 import pytest  # type: ignore
 from fastapi.testclient import TestClient
 
-from app import app, slack_client, SUCCESS_MESSAGE
-
+from app import app, slack_client, SUCCESS_MESSAGE, event_loop
+from forms.book import Book
 
 client = TestClient(app)
 
 
 @pytest.fixture
-def submit_form_data():
-    return {
-        "payload": json.dumps(
-            {
-                "type": "dialog_submission",
-                "submission": {
-                    "book_name": "부의 추월차선",
-                    "category": "경제일반",
-                    "link": "https://ridibooks.com/books/1354000008?_s=search&_q=부의+추월차선",
-                    "publisher": "토트",
-                    "author": "엠제이 드마코",
-                    "recommend_reason": "죽도록 일해서 돈을 벌고, 아끼고, 모으는 것만으로는 절대 젊어서 부자가 될 수 없다고 말하며, ‘젊어서 부자가 되는 길’을 공개한다.",
-                },
-                "callback_id": "bookk-bookk",
-                "state": "Limo",
-                "team": {"id": "T1ABCD2E12", "domain": "coverbands"},
-                "user": {"id": "W12A3BCDEF", "name": "dreamweaver"},
-                "channel": {"id": "C1AB2C3DE", "name": "coverthon-1999"},
-                "action_ts": "936893340.702759",
-                "token": "M1AqUUw3FqayAbqNtsGMch72",
-                "response_url": "https://hooks.slack.com/app/T012AB0A1/123456789/JpmK0yzoZDeRiqfeduTBYXWQ",
-            }
-        )
-    }
-
-
-@pytest.fixture
 def mock_user_profile_get(user_profile):
-    class TestArgs:
-        def __call__(self, *args, **kwargs):
-            self.args = list(args)
-            self.kwargs = kwargs
-            f = Future()
-            f.set_result(user_profile)
-            return f
-
-    return TestArgs()
+    f = Future()
+    f.set_result(user_profile)
+    return f
 
 
 @pytest.fixture
 def mock_post_message(post_result):
-    class TestArgs:
-        def __call__(self, *args, **kwargs):
-            self.args = list(args)
-            self.kwargs = kwargs
-            f = Future()
-            f.set_result(post_result)
-            return f
+    f = Future()
+    f.set_result(post_result)
+    return f
 
-    return TestArgs()
+
+@pytest.fixture
+def submit_payload():
+    return {
+        "type": "dialog_submission",
+        "submission": {
+            "book_name": "부의 추월차선",
+            "category": "경제일반",
+            "link": "https://ridibooks.com/books/1354000008?_s=search&_q=부의+추월차선",
+            "publisher": "토트",
+            "author": "엠제이 드마코",
+            "recommend_reason": "죽도록 일해서 돈을 벌고, 아끼고, 모으는 것만으로는 절대 젊어서 부자가 될 수 없다고 말하며, ‘젊어서 부자가 되는 길’을 공개한다.",
+        },
+        "callback_id": "bookk-bookk",
+        "state": "Limo",
+        "team": {"id": "T1ABCD2E12", "domain": "coverbands"},
+        "user": {"id": "W12A3BCDEF", "name": "dreamweaver"},
+        "channel": {"id": "C1AB2C3DE", "name": "coverthon-1999"},
+        "action_ts": "936893340.702759",
+        "token": "M1AqUUw3FqayAbqNtsGMch72",
+        "response_url": "https://hooks.slack.com/app/T012AB0A1/123456789/JpmK0yzoZDeRiqfeduTBYXWQ",
+    }
 
 
 USER_PROFILE_SUCCESS_BODY = {
@@ -115,55 +100,97 @@ POST_MESSAGE_FAIL_BODY = {
 }
 
 
+def test_submit_book_fail_by_wrong_url_1(mocker, submit_payload):
+    mocker.patch("app.slack_client.users_profile_get")
+    mocker.patch("app.slack_client.chat_postMessage")
+    mocker.patch("app.event_loop.call_later")
+
+    submit_payload["submission"]["link"] = "htt://www.google.com"
+    response = client.post("/submit-book/", data={"payload": json.dumps(submit_payload)})
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}
+
+    slack_client.users_profile_get.assert_not_called()
+    slack_client.chat_postMessage.assert_not_called()
+    event_loop.call_later.assert_not_called()
+
+
+def test_submit_book_fail_by_wrong_url_2(mocker, submit_payload):
+    mocker.patch("app.slack_client.users_profile_get")
+    mocker.patch("app.slack_client.chat_postMessage")
+    mocker.patch("app.event_loop.call_later")
+
+    submit_payload["submission"]["link"] = "://www.google.com"
+    response = client.post("/submit-book/", data={"payload": json.dumps(submit_payload)})
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}
+
+    slack_client.users_profile_get.assert_not_called()
+    slack_client.chat_postMessage.assert_not_called()
+    event_loop.call_later.assert_not_called()
+
+
 @pytest.mark.parametrize("user_profile", [USER_PROFILE_SUCCESS_BODY])
 @pytest.mark.parametrize("post_result", [POST_MESSAGE_SUCCESS_BODY])
-def test_submit_book_succeed(mocker, monkeypatch, submit_form_data, mock_user_profile_get, mock_post_message):
-    mocker.patch("helper.post_book_to_notion")
-    monkeypatch.setattr(slack_client, "users_profile_get", mock_user_profile_get)
-    monkeypatch.setattr(slack_client, "chat_postMessage", mock_post_message)
+def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock_post_message):
+    mocker.patch("app.slack_client.users_profile_get", MagicMock(return_value=mock_user_profile_get))
+    mocker.patch("app.slack_client.chat_postMessage", MagicMock(return_value=mock_post_message))
+    mocker.patch("app.post_book_to_notion")
+    mocker.patch("app.event_loop.call_later")
 
-    response = client.post("/submit-book/", data=submit_form_data)
-    payload_from_user = json.loads(submit_form_data["payload"])
-
-    assert mock_user_profile_get.kwargs["user"] == payload_from_user["user"]["id"]
-
-    assert mock_post_message.kwargs["channel"] == payload_from_user["channel"]["id"]
-    assert mock_post_message.kwargs["text"] == SUCCESS_MESSAGE.format(
-        **payload_from_user["submission"], username=USER_PROFILE_SUCCESS_BODY["profile"]["real_name"],
-    )
+    response = client.post("/submit-book/", data={"payload": json.dumps(submit_payload)})
 
     assert response.status_code == HTTPStatus.OK
     assert not response.content
 
+    slack_client.users_profile_get.assert_called_once_with(user=submit_payload["user"]["id"])
+    slack_client.chat_postMessage.assert_called_once_with(
+        text=SUCCESS_MESSAGE.format(
+            **submit_payload["submission"], username=USER_PROFILE_SUCCESS_BODY["profile"]["real_name"],
+        ),
+        channel=submit_payload["channel"]["id"],
+    )
+    from app import post_book_to_notion
+
+    event_loop.call_later.assert_called_once_with(0, post_book_to_notion, Book(**submit_payload["submission"]))
+
 
 @pytest.mark.parametrize("user_profile", [USER_PROFILE_FAIL_BODY])
-def test_submit_book_fail_to_get_user_profile(monkeypatch, submit_form_data, mock_user_profile_get):
-    monkeypatch.setattr(slack_client, "users_profile_get", mock_user_profile_get)
-    payload_from_user = json.loads(submit_form_data["payload"])
+@pytest.mark.parametrize("post_result", [])
+def test_submit_book_fail_to_get_user_profile(mocker, submit_payload, mock_user_profile_get, mock_post_message):
+    mocker.patch("app.slack_client.users_profile_get", MagicMock(return_value=mock_user_profile_get))
+    mocker.patch("app.slack_client.chat_postMessage", MagicMock(return_value=mock_post_message))
+    mocker.patch("app.event_loop.call_later")
 
-    response = client.post("/submit-book/", data=submit_form_data)
-
-    assert mock_user_profile_get.kwargs["user"] == payload_from_user["user"]["id"]
+    response = client.post("/submit-book/", data={"payload": json.dumps(submit_payload)})
 
     assert response.status_code == HTTPStatus.OK
     assert response.content.decode() == USER_PROFILE_FAIL_BODY["error"]
 
+    slack_client.users_profile_get.assert_called_once_with(user=submit_payload["user"]["id"])
+    slack_client.chat_postMessage.assert_not_called()
+    event_loop.call_later.assert_not_called()
+
 
 @pytest.mark.parametrize("user_profile", [USER_PROFILE_SUCCESS_BODY])
 @pytest.mark.parametrize("post_result", [POST_MESSAGE_FAIL_BODY])
-def test_submit_book_fail_to_post_message(monkeypatch, submit_form_data, mock_user_profile_get, mock_post_message):
-    monkeypatch.setattr(slack_client, "users_profile_get", mock_user_profile_get)
-    monkeypatch.setattr(slack_client, "chat_postMessage", mock_post_message)
-    payload_from_user = json.loads(submit_form_data["payload"])
+def test_submit_book_fail_to_post_message(mocker, submit_payload, mock_user_profile_get, mock_post_message):
+    mocker.patch("app.slack_client.users_profile_get", MagicMock(return_value=mock_user_profile_get))
+    mocker.patch("app.slack_client.chat_postMessage", MagicMock(return_value=mock_post_message))
+    mocker.patch("app.event_loop.call_later")
 
-    response = client.post("/submit-book/", data=submit_form_data)
-
-    assert mock_user_profile_get.kwargs["user"] == payload_from_user["user"]["id"]
-
-    assert mock_post_message.kwargs["channel"] == payload_from_user["channel"]["id"]
-    assert mock_post_message.kwargs["text"] == SUCCESS_MESSAGE.format(
-        **payload_from_user["submission"], username=USER_PROFILE_SUCCESS_BODY["profile"]["real_name"],
-    )
+    response = client.post("/submit-book/", data={"payload": json.dumps(submit_payload)})
 
     assert response.status_code == HTTPStatus.OK
     assert response.content.decode() == POST_MESSAGE_FAIL_BODY["error"]
+
+    slack_client.users_profile_get.assert_called_once_with(user=submit_payload["user"]["id"])
+    slack_client.chat_postMessage.assert_called_once_with(
+        text=SUCCESS_MESSAGE.format(
+            **submit_payload["submission"], username=USER_PROFILE_SUCCESS_BODY["profile"]["real_name"],
+        ),
+        channel=submit_payload["channel"]["id"],
+    )
+    event_loop.call_later.assert_not_called()
