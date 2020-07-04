@@ -1,13 +1,12 @@
 import os
-import uuid
 from asyncio import Future
 from http import HTTPStatus
+from unittest.mock import MagicMock
 
 import pytest  # type: ignore
 
 from fastapi.testclient import TestClient
 from app import app, slack_client
-from forms.dialog import DialogFormat
 
 
 client = TestClient(app)
@@ -156,38 +155,31 @@ def mock_uuid():
 
 @pytest.fixture
 def mock_dialog_open(response):
-    class TestArgs:
-        def __call__(self, *args, **kwargs):
-            self.args = list(args)
-            self.kwargs = kwargs
-            f = Future()
-            f.set_result(response)
-            return f
-
-    return TestArgs()
+    f = Future()
+    f.set_result(response)
+    return f
 
 
 @pytest.mark.parametrize("response", [{"ok": True}])
-def test_open_form_succeed(monkeypatch, dialog_form_data, dialog_format, mock_uuid, mock_dialog_open):
-    monkeypatch.setattr(slack_client, "dialog_open", mock_dialog_open)
-    monkeypatch.setattr(uuid, "UUID", mock_uuid)
+def test_open_form_succeed(mocker, dialog_form_data, dialog_format, mock_uuid, mock_dialog_open):
+    mocker.patch("app.slack_client.dialog_open", MagicMock(return_value=mock_dialog_open))
+    mocker.patch("uuid.UUID", mock_uuid)
 
     response = client.post("/open-form/", data=dialog_form_data)
 
-    assert mock_dialog_open.kwargs["trigger_id"] == dialog_form_data["trigger_id"]
-    assert DialogFormat(**mock_dialog_open.kwargs["dialog"]) == DialogFormat(**dialog_format)
-
     assert response.status_code == HTTPStatus.OK
+
+    slack_client.dialog_open.assert_called_once_with(trigger_id=dialog_form_data["trigger_id"], dialog=dialog_format)
 
 
 @pytest.mark.parametrize("response", [{"ok": False, "error": "some-error"}])
-def test_open_form_fail(monkeypatch, dialog_form_data, dialog_format, mock_uuid, mock_dialog_open):
-    monkeypatch.setattr(slack_client, "dialog_open", mock_dialog_open)
-    monkeypatch.setattr(uuid, "UUID", mock_uuid)
+def test_open_form_fail(mocker, dialog_form_data, dialog_format, mock_uuid, mock_dialog_open):
+    mocker.patch("app.slack_client.dialog_open", MagicMock(return_value=mock_dialog_open))
+    mocker.patch("uuid.UUID", mock_uuid)
 
     response = client.post("/open-form/", data=dialog_form_data)
 
-    assert mock_dialog_open.kwargs["trigger_id"] == dialog_form_data["trigger_id"]
-    assert DialogFormat(**mock_dialog_open.kwargs["dialog"]) == DialogFormat(**dialog_format)
     assert response.status_code == HTTPStatus.OK
     assert response.content.decode() == "some-error"
+
+    slack_client.dialog_open.assert_called_once_with(trigger_id=dialog_form_data["trigger_id"], dialog=dialog_format)
