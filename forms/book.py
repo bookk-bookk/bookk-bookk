@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import enum
+import re
 from dataclasses import dataclass
 from typing import Optional
 
@@ -20,6 +21,12 @@ class BookCategories(enum.Enum):
     HEALTH_HOBBY = "건강/취미", ("생활습관", "음식/요리", "운동/스포츠", "기타")
 
 
+LINK_REGEX = (
+    r"^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]"
+    r"+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
+)
+
+
 @dataclass(repr=True)
 class Book:
     book_name: str
@@ -37,3 +44,6 @@ class Book:
                 if s == self.category:
                     return main
         return None
+
+    def is_valid_link(self):
+        return re.match(LINK_REGEX, self.link)

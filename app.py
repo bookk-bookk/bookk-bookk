@@ -15,9 +15,11 @@ from forms.dialog import book_dialog_format
 from settings import settings
 
 app = FastAPI()
+event_loop = asyncio.get_event_loop()
 
 slack_token: str = settings.slack_api_token
 slack_client = WebClient(token=slack_token, run_async=True)
+
 
 DIALOG_SUBMIT_DONE: str = "dialog_submission"
 SUCCESS_MESSAGE: str = """
@@ -48,13 +50,18 @@ async def submit_book(request: Request) -> Response:
     if payload.get("type") != DIALOG_SUBMIT_DONE:
         return Response(status_code=HTTPStatus.BAD_REQUEST)
 
+    book: Book = Book(**payload["submission"])
+    if not book.is_valid_link():
+        return Response(
+            headers={"content-type": "application/json"},
+            content=json.dumps({"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}),
+        )
+
     user_profile_res: SlackResponse = await slack_client.users_profile_get(  # type: ignore
         user=payload["user"]["id"],
     )
     if not user_profile_res["ok"]:
         return Response(content=user_profile_res["error"])
-
-    book: Book = Book(**payload["submission"])
 
     post_message_res: SlackResponse = await slack_client.chat_postMessage(  # type: ignore
         channel=payload["channel"]["id"],
@@ -64,7 +71,6 @@ async def submit_book(request: Request) -> Response:
         return Response(content=post_message_res["error"])
 
     # posting to notion is intended to run background.
-    event_loop = asyncio.get_event_loop()
     event_loop.call_later(0, post_book_to_notion, book)
 
     return Response()
