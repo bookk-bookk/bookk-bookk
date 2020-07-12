@@ -158,7 +158,7 @@ def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock
 
 
 @pytest.mark.parametrize("user_profile", [USER_PROFILE_FAIL_BODY])
-@pytest.mark.parametrize("post_result", [])
+@pytest.mark.parametrize("post_result", [POST_MESSAGE_FAIL_BODY])
 def test_submit_book_fail_to_get_user_profile(mocker, submit_payload, mock_user_profile_get, mock_post_message):
     mocker.patch("app.slack_client.users_profile_get", MagicMock(return_value=mock_user_profile_get))
     mocker.patch("app.slack_client.chat_postMessage", MagicMock(return_value=mock_post_message))
