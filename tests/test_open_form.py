@@ -21,7 +21,6 @@ def dialog_format():
         "submit_label": "submit",
         "notify_on_cancel": True,
         "elements": [
-            {"label": "책이름", "name": "book_name", "type": "text", "option_groups": None, "subtype": None},
             {
                 "label": "카테고리",
                 "name": "category",
@@ -115,8 +114,6 @@ def dialog_format():
                 "subtype": None,
             },
             {"label": "도서링크", "name": "link", "type": "text", "option_groups": None, "subtype": "url"},
-            {"label": "출판사", "name": "publisher", "type": "text", "option_groups": None, "subtype": None},
-            {"label": "저자", "name": "author", "type": "text", "option_groups": None, "subtype": None},
             {"label": "추천이유", "name": "recommend_reason", "type": "textarea", "option_groups": None, "subtype": None},
         ],
     }
