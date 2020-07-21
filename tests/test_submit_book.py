@@ -31,11 +31,8 @@ def submit_payload():
     return {
         "type": "dialog_submission",
         "submission": {
-            "book_name": "부의 추월차선",
             "category": "경제일반",
             "link": "https://ridibooks.com/books/1354000008?_s=search&_q=부의+추월차선",
-            "publisher": "토트",
-            "author": "엠제이 드마코",
             "recommend_reason": "죽도록 일해서 돈을 벌고, 아끼고, 모으는 것만으로는 절대 젊어서 부자가 될 수 없다고 말하며, ‘젊어서 부자가 되는 길’을 공개한다.",
         },
         "callback_id": "bookk-bookk",

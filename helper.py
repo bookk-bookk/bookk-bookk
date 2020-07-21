@@ -27,12 +27,12 @@ def post_book_to_notion(book: Book) -> None:
     new_row = page.collection.add_row()
 
     new_row.category = [book.category, book.parent_category]
-    new_row.title = book.book_name
-    new_row.author = book.author
-    new_row.publisher = book.publisher
     new_row.URL = book.link
     new_row.recommend_reason = book.recommend_reason
 
     response = get_og_tags(book.link)
+
+    new_row.title = response["openGraph"]["title"]
+
     image_block = new_row.children.add_new(ImageBlock)
     image_block.set_source_url(response["openGraph"]["image"]["url"])
