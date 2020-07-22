@@ -145,13 +145,17 @@ def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock
     slack_client.users_profile_get.assert_called_once_with(user=submit_payload["user"]["id"])
     slack_client.chat_postMessage.assert_called_once_with(
         text=SUCCESS_MESSAGE.format(
-            **submit_payload["submission"], username=USER_PROFILE_SUCCESS_BODY["profile"]["real_name"],
+            **submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY["profile"]["real_name"],
         ),
         channel=submit_payload["channel"]["id"],
     )
     from app import post_book_to_notion
 
-    event_loop.call_later.assert_called_once_with(0, post_book_to_notion, Book(**submit_payload["submission"]))
+    event_loop.call_later.assert_called_once_with(
+        0,
+        post_book_to_notion,
+        Book(**submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY["profile"]["real_name"],),
+    )
 
 
 @pytest.mark.parametrize("user_profile", [USER_PROFILE_FAIL_BODY])
@@ -186,7 +190,7 @@ def test_submit_book_fail_to_post_message(mocker, submit_payload, mock_user_prof
     slack_client.users_profile_get.assert_called_once_with(user=submit_payload["user"]["id"])
     slack_client.chat_postMessage.assert_called_once_with(
         text=SUCCESS_MESSAGE.format(
-            **submit_payload["submission"], username=USER_PROFILE_SUCCESS_BODY["profile"]["real_name"],
+            **submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY["profile"]["real_name"],
         ),
         channel=submit_payload["channel"]["id"],
     )
