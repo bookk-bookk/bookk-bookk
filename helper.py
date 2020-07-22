@@ -1,3 +1,5 @@
+from typing import Optional
+
 import requests
 from urllib.parse import quote_plus
 
@@ -13,13 +15,13 @@ OPEN_GRAPH_BASE_URL: str = "https://opengraph.io/api/1.1/site/{book_link}"
 def get_og_tags(book_link: str) -> dict:
     response = requests.get(
         OPEN_GRAPH_BASE_URL.format(book_link=quote_plus(book_link, encoding="UTF-8")),
-        params={"app_id": settings.og_app_id},
+        params={"app_id": settings.og_app_id},  # type: ignore
     )
     return response.json()
 
 
 notion_client: NotionClient = NotionClient(token_v2=settings.notion_token_v2)
-notion_page_url: str = settings.notion_page_url
+notion_page_url: Optional[str] = settings.notion_page_url
 
 
 def post_book_to_notion(book: Book) -> None:

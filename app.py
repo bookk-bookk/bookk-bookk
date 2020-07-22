@@ -3,6 +3,7 @@ import json
 import uuid
 from dataclasses import asdict
 from http import HTTPStatus
+from typing import Optional
 
 from fastapi import FastAPI, Request, Response
 from slack import WebClient
@@ -17,7 +18,7 @@ from settings import settings
 app = FastAPI()
 event_loop = asyncio.get_event_loop()
 
-slack_token: str = settings.slack_api_token
+slack_token: Optional[str] = settings.slack_api_token
 slack_client = WebClient(token=slack_token, run_async=True)
 
 
