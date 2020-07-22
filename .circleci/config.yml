@@ -1,46 +1,21 @@
-version: 2
-jobs:
-  build:
-    working_directory: ~/bookk-bookk
-    docker:
-      - image: kde6260/bookk-ci:latest
+version: 2.1
 
+orbs:
+  python: circleci/python@0.2.1
+
+jobs:
+  build-and-test:
+    executor: python/default
     steps:
       - checkout
-
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "requirements/local.txt" }}
-            - v1-dependencies-
-
+      - python/load-cache
+      - python/install-deps
+      - python/save-cache
       - run:
-          name: Set virtualenv
-          command: |
-            python -m venv venv
-            . venv/bin/activate
-      - run:
-          name: Lint Dockerfile
-          command: hadolint Dockerfile --ignore DL3013 --ignore DL3025
+          command: ./manage.py test
+          name: Test
 
-      - run:
-          name: Install dependencies
-          command: |
-            pip install -r requirements/local.txt
-            pip install flake8==3.8.3
-
-      - run:
-          name: Lint Python code
-          command: flake8 --ignore E501 --max-complexity 10 --exclude ./venv
-
-      - run:
-          name: Type check with mypy
-          command: mypy .
-
-      - run:
-          name: Execute Pytest
-          command: pytest tests
-
-      - save_cache:
-          paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "requirements/local.txt" }}
+workflows:
+  main:
+    jobs:
+      - build-and-test
