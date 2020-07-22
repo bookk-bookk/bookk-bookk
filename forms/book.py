@@ -32,6 +32,7 @@ class Book:
     category: str
     link: str
     recommend_reason: str
+    recommender: Optional[str] = None
 
     @property
     def parent_category(self) -> Optional[str]:

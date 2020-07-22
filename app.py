@@ -24,10 +24,9 @@ slack_client = WebClient(token=slack_token, run_async=True)
 
 DIALOG_SUBMIT_DONE: str = "dialog_submission"
 SUCCESS_MESSAGE: str = """
-📖 {username} 님이 추천도서를 공유했습니다 📖
+📖 {recommender}님이 {category}도서를 추천했어요 📖
 {recommend_reason}
 {link}
-{category}
 """
 
 
@@ -64,9 +63,10 @@ async def submit_book(request: Request) -> Response:
     if not user_profile_res["ok"]:
         return Response(content=user_profile_res["error"])
 
+    book.recommender = user_profile_res["profile"]["real_name"]
+
     post_message_res: SlackResponse = await slack_client.chat_postMessage(  # type: ignore
-        channel=payload["channel"]["id"],
-        text=SUCCESS_MESSAGE.format(**asdict(book), username=user_profile_res["profile"]["real_name"]),
+        channel=payload["channel"]["id"], text=SUCCESS_MESSAGE.format(**asdict(book)),
     )
     if not post_message_res["ok"]:
         return Response(content=post_message_res["error"])

@@ -31,6 +31,7 @@ def post_book_to_notion(book: Book) -> None:
     new_row.category = [book.category, book.parent_category]
     new_row.URL = book.link
     new_row.recommend_reason = book.recommend_reason
+    new_row.recommender = book.recommender
 
     response = get_og_tags(book.link)
 
