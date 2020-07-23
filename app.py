@@ -51,7 +51,7 @@ async def submit_book(request: Request) -> Response:
         return Response(status_code=HTTPStatus.BAD_REQUEST)
 
     book: Book = Book(**payload["submission"])
-    if not book.is_valid_link():
+    if not book.validate_link():
         return Response(
             headers={"content-type": "application/json"},
             content=json.dumps({"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}),
