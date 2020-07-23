@@ -1,4 +1,6 @@
+import logging
 import requests
+from typing import Optional
 from urllib.parse import quote_plus
 
 from notion.block import ImageBlock  # type: ignore
@@ -13,13 +15,13 @@ OPEN_GRAPH_BASE_URL: str = "https://opengraph.io/api/1.1/site/{book_link}"
 def get_og_tags(book_link: str) -> dict:
     response = requests.get(
         OPEN_GRAPH_BASE_URL.format(book_link=quote_plus(book_link, encoding="UTF-8")),
-        params={"app_id": settings.og_app_id},
+        params={"app_id": settings.og_app_id},  # type: ignore
     )
     return response.json()
 
 
 notion_client: NotionClient = NotionClient(token_v2=settings.notion_token_v2)
-notion_page_url: str = settings.notion_page_url
+notion_page_url: Optional[str] = settings.notion_page_url
 
 
 def post_book_to_notion(book: Book) -> None:
@@ -32,8 +34,13 @@ def post_book_to_notion(book: Book) -> None:
     new_row.recommender = book.recommender
 
     response = get_og_tags(book.link)
+    try:
+        og_tags = response["openGraph"]
+    except KeyError:
+        logging.error("Failed to parse OpenGraph::{}".format(response))
+        return
 
-    new_row.title = response["openGraph"]["title"]
+    new_row.title = og_tags["title"]
 
     image_block = new_row.children.add_new(ImageBlock)
-    image_block.set_source_url(response["openGraph"]["image"]["url"])
+    image_block.set_source_url(og_tags["image"]["url"])
