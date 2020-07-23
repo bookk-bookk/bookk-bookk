@@ -43,5 +43,10 @@ class Book:
                     return main
         return None
 
-    def is_valid_link(self):
-        return re.match(LINK_REGEX, self.link)
+    def validate_link(self) -> Optional[str]:
+        matched = re.match(LINK_REGEX, self.link)
+        if not matched:
+            return None
+
+        self.link = self.link.strip()
+        return self.link
