@@ -37,7 +37,7 @@ def get_best_recommenders_message(books):
     bests = [c for c in counter if counter[c] == most]
 
     for i in range(len(bests)):
-        bests[i] = f"🎉🌟 {bests[i]} 🌟🎉 ({counter[bests[i]]})권"
+        bests[i] = f"🎉🌟 {bests[i]} 🌟🎉 ({counter[bests[i]]}권)"
 
     message = [f"👑 {(datetime.today() - timedelta(days=1)).month}월의 독서왕 👑"]
     message.extend(bests)
