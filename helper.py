@@ -44,3 +44,8 @@ def post_book_to_notion(book: Book) -> None:
 
     image_block = new_row.children.add_new(ImageBlock)
     image_block.set_source_url(og_tags["image"]["url"])
+
+
+def get_books_from_notion():
+    page = notion_client.get_collection_view(notion_page_url)
+    return page.default_query().execute()
