@@ -25,6 +25,7 @@ slack_client = WebClient(token=slack_token, run_async=True)
 DIALOG_SUBMIT_DONE: str = "dialog_submission"
 SUCCESS_MESSAGE: str = """
 📖 {recommender}님이 {category}도서를 추천했어요 📖
+
 {recommend_reason}
 {link}
 """
