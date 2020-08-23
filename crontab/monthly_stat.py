@@ -12,6 +12,10 @@ slack_token: Optional[str] = settings.slack_api_token
 slack_client = WebClient(token=slack_token)
 
 
+BOOK_EMOJI = ":bookkbookk:"
+MAX_RANK = 3
+
+
 def get_books_posted_in_last_month():
     yesterday = datetime.today() - timedelta(days=1)
     start_date = datetime(yesterday.year, yesterday.month, 1)
@@ -24,23 +28,42 @@ def get_books_posted_in_last_month():
 
 def get_stat_message(books):
     book_titles = [b.title for b in books]
-    message = [f"📖 지난 한달 동안 북크북크에 {len(book_titles)}권의 책이 모였어요 📖"]
+    yesterday = datetime.today() - timedelta(days=1)
+    message = [
+        f"{BOOK_EMOJI} 북크북크 집계 ({yesterday.month}/{1} ~ {yesterday.month}/{yesterday.day}) {BOOK_EMOJI}",
+        f"추천된 책의 수 : {len(book_titles)}권",
+        f"추천한 회원 수 : {len(set(b.recommender for b in books))}명\n",
+        f"{BOOK_EMOJI} 도서목록 {BOOK_EMOJI}",
+    ]
     message.extend(book_titles)
     return "\n".join(message)
 
 
 def get_best_recommenders_message(books):
     recommenders = [b.recommender for b in books]
-
     counter = Counter(recommenders)
-    most = max(list(counter.values()))
-    bests = [c for c in counter if counter[c] == most]
 
-    for i in range(len(bests)):
-        bests[i] = f"🎉🌟 {bests[i]} 🌟🎉 ({counter[bests[i]]}권)"
+    uniq_cv = set(counter.values())
 
-    message = [f"👑 {(datetime.today() - timedelta(days=1)).month}월의 독서왕 👑"]
-    message.extend(bests)
+    top_book_counts = sorted(uniq_cv, reverse=True)
+    if len(top_book_counts) > MAX_RANK:
+        top_book_counts = top_book_counts[:MAX_RANK]
+
+    rankers = {r: [] for r in top_book_counts}
+    for user in counter:
+        if counter[user] in top_book_counts:
+            rankers[counter[user]].append(user)
+
+    messages = []
+    for i, cnt in enumerate(rankers):
+        if len(rankers[cnt]) > 1:
+            rank_text = f"공동{i+1}위"
+        else:
+            rank_text = f"{i+1}위"
+        messages.append(f"👑 {rank_text} {', '.join(rankers[cnt])} ({cnt}권) 👑")
+
+    message = [f"{BOOK_EMOJI} {(datetime.today() - timedelta(days=1)).month}월의 독서왕 {BOOK_EMOJI}"]
+    message.extend(messages)
 
     return "\n".join(message)
 
