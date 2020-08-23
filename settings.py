@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     og_app_id: Optional[str] = os.getenv("OG_APP_ID")
     notion_token_v2: Optional[str] = os.getenv("NOTION_TOKEN_V2")
     notion_page_url: Optional[str] = os.getenv("NOTION_PAGE_URL")
+    books_channel: Optional[str] = os.getenv("BOOKS_CHANNEL")
 
 
 env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")

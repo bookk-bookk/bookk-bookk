@@ -1,12 +1,16 @@
 from collections import Counter
 from datetime import datetime, timedelta
+import logging
 from typing import Optional
 
 from slack import WebClient
+from slack.web.slack_response import SlackResponse
 
 from helper import get_books_from_notion
 from settings import settings
 
+
+logger = logging.getLogger()
 
 slack_token: Optional[str] = settings.slack_api_token
 slack_client = WebClient(token=slack_token)
@@ -73,8 +77,13 @@ def post_message_to_slack_channel():
     stat_msg = get_stat_message(books)
     best_recommender_msg = get_best_recommenders_message(books)
 
-    print(stat_msg)
-    print(best_recommender_msg)
+    final_msg = "\n".join([stat_msg, best_recommender_msg])
+
+    post_message_res: SlackResponse = slack_client.chat_postMessage(  # type: ignore
+        channel=settings.books_channel, text=final_msg,
+    )
+    if not post_message_res["ok"]:
+        logger.error(f"######## failed to post monthly-stat message: {post_message_res['error']} #######")
 
 
 post_message_to_slack_channel()
