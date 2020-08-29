@@ -87,5 +87,5 @@ def post_message_to_slack_channel():
 
 
 today = datetime.today()
-if today.day == 1 and today.hour == 12:
+if today.day == 1:
     post_message_to_slack_channel()
