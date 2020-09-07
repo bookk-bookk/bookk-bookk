@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     books_channel: Optional[str] = os.getenv("BOOKS_CHANNEL")
 
 
-env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
-load_dotenv(dotenv_path=env_path)
+if os.getenv("BOOKK_ENV") != "test":
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    load_dotenv(dotenv_path=env_path)
+
 settings = Settings()
