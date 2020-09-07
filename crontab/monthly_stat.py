@@ -32,11 +32,14 @@ def get_books_posted_in_last_month():
 
 def get_stat_message(books):
     book_titles = [b.title for b in books]
+    category_counter = Counter([b.category[-1] for b in books])
+
     yesterday = datetime.today() - timedelta(days=1)
     message = [
         f"{BOOK_EMOJI} 북크북크 집계 ({yesterday.month}/{1} ~ {yesterday.month}/{yesterday.day}) {BOOK_EMOJI}",
         f"추천된 책의 수 : {len(book_titles)}권",
-        f"추천한 회원 수 : {len(set(b.recommender for b in books))}명\n",
+        f"추천한 회원 수 : {len(set(b.recommender for b in books))}명",
+        f"가장 많이 추천된 카테고리 : {category_counter.most_common(1)[0][0]}\n",
         f"{BOOK_EMOJI} 도서목록 {BOOK_EMOJI}",
     ]
     message.extend(book_titles)
@@ -86,6 +89,5 @@ def post_message_to_slack_channel():
         logger.error(f"######## failed to post monthly-stat message: {post_message_res['error']} #######")
 
 
-today = datetime.today()
-if today.day == 1:
+if datetime.today().day == 1:
     post_message_to_slack_channel()
