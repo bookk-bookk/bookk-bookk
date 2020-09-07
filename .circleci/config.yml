@@ -1,7 +1,12 @@
 version: 2
+
+workflows:
+  env-vars:
+    jobs:
+      - build:
+          context: settings
 jobs:
   build:
-    context: settings
     working_directory: ~/bookk-bookk
     docker:
       - image: kde6260/bookk-ci:latest
