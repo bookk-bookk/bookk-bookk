@@ -1,4 +1,5 @@
-# bookk-bookk
+# bookk-bookk [![bookk-bookk](https://circleci.com/gh/bookk-bookk/bookk-bookk.svg?style=svg)](https://app.circleci.com/pipelines/github/bookk-bookk)
+
 
 ### Repository setup guide
 1. [`pyenv`](https://github.com/pyenv/pyenv)와 [`pyenv-virtualenv`](https://github.com/pyenv/pyenv-virtualenv)를 설치하세요.
