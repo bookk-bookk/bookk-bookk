@@ -77,7 +77,7 @@ def post_message_to_slack_channel():
     stat_msg = get_stat_message(books)
     best_recommender_msg = get_best_recommenders_message(books)
 
-    final_msg = "\n".join([stat_msg, best_recommender_msg])
+    final_msg = "\n".join([stat_msg, "\n", best_recommender_msg])
 
     post_message_res: SlackResponse = slack_client.chat_postMessage(  # type: ignore
         channel=settings.books_channel, text=final_msg,
