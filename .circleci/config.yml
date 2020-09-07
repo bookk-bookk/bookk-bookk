@@ -1,10 +1,5 @@
 version: 2
 
-workflows:
-  env-vars:
-    jobs:
-      - build:
-          context: settings
 jobs:
   build:
     working_directory: ~/bookk-bookk
