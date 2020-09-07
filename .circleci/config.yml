@@ -1,6 +1,7 @@
 version: 2
 jobs:
   build:
+    context: settings
     working_directory: ~/bookk-bookk
     docker:
       - image: kde6260/bookk-ci:latest
