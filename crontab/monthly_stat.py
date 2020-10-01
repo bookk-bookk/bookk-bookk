@@ -76,7 +76,7 @@ def get_best_recommenders_message(books):
 
 
 def post_message_to_slack_channel():
-    books = get_books_from_notion()
+    books = get_books_posted_in_last_month()
     stat_msg = get_stat_message(books)
     best_recommender_msg = get_best_recommenders_message(books)
 
