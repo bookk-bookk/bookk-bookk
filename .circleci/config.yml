@@ -1,12 +1,5 @@
 version: 2
 
-workflows:
-  build:
-    jobs:
-      - build:
-          context:
-            - settings
-
 jobs:
   build:
     working_directory: ~/bookk-bookk
