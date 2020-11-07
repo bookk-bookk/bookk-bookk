@@ -2,6 +2,8 @@
 
 ### 슬랙 무료플랜을 사용하는 북클럽을 위한 슬랙봇 '북크북크'
 
+<br>
+
 왜 만들었어요?
 
 - 실바니안 북클럽은 슬랙 워크스페이스를 무료로 사용하기 때문에 `#books` 채널에서 회원들이 공유하는 책 정보들이 사라집니다.
@@ -16,21 +18,26 @@
     - 템플릿에서 단어 검색 가능
 - 매월 1일에 지난 달에 등록된 추천 도서들을 집계하고 책을 가장 많이 추천한 추천왕을 선정해요.
 
+<br>
+
 ### 사용 가이드
 
 1. `#books` 채널에서 `/book` 명령어를 입력하세요.
+<br>
 ![slack-command-example](./images/slack-command-example.png)
 
-
 2. 추천하려는 도서의 카테고리, 링크, 추천이유를 입력하세요.
+<br>
 ![slack-dialog-example](./images/slack-dialog-example.png)
 
-
 3. 북크북크가 채널에 결과 메세지를 전송합니다.
+<br>
 ![slack-result-example](./images/slack-result-example.png)
 
 4. 실바니안 노션에서 그동안 쌓인 추천 도서들을 볼 수 있어요.
+<br>
 ![notion-list](./images/notion-list.png)
 
 5. 추천한 도서의 상세 정보도 확인할 수 있어요.
+<br>
 ![notion-detail](./images/notion-detail.png)
