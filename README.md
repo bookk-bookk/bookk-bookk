@@ -22,22 +22,22 @@
 
 ### 사용 가이드
 
-1. `#books` 채널에서 `/book` 명령어를 입력하세요.
-<br>
+1. `#books` 채널에서 `/book` 명령어를 입력하세요. <br>
+
 ![slack-command-example](./images/slack-command-example.png)
 
-2. 추천하려는 도서의 카테고리, 링크, 추천이유를 입력하세요.
-<br>
+2. 추천하려는 도서의 카테고리, 링크, 추천이유를 입력하세요. <br>
+
 ![slack-dialog-example](./images/slack-dialog-example.png)
 
-3. 북크북크가 채널에 결과 메세지를 전송합니다.
-<br>
+3. 북크북크가 채널에 결과 메세지를 전송합니다. <br>
+
 ![slack-result-example](./images/slack-result-example.png)
 
-4. 실바니안 노션에서 그동안 쌓인 추천 도서들을 볼 수 있어요.
-<br>
+4. 실바니안 노션에서 그동안 쌓인 추천 도서들을 볼 수 있어요. <br>
+
 ![notion-list](./images/notion-list.png)
 
-5. 추천한 도서의 상세 정보도 확인할 수 있어요.
-<br>
+5. 추천한 도서의 상세 정보도 확인할 수 있어요. <br>
+
 ![notion-detail](./images/notion-detail.png)
