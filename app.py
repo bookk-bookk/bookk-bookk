@@ -76,3 +76,9 @@ async def submit_book(request: Request) -> Response:
     event_loop.call_later(0, post_book_to_notion, book)
 
     return Response()
+
+
+@app.post("/hook/")
+async def hook(request):
+    print(request)
+    return Response()
