@@ -1,7 +1,7 @@
 import hashlib
 
 from notion.client import NotionClient  # type: ignore
-from notion.store import RecordStore
+from notion.store import RecordStore  # type: ignore
 
 
 class RecordStoreWithSmallLimit(RecordStore):
