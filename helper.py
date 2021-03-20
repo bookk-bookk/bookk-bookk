@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 from notion.block import ImageBlock  # type: ignore
 from notion.client import NotionClient  # type: ignore
 
+from patch_client import NotionClientWithSmallLimit
 from settings import settings
 from forms.book import Book
 
@@ -20,7 +21,7 @@ def get_og_tags(book_link: str) -> dict:
     return response.json()
 
 
-notion_client: NotionClient = NotionClient(token_v2=settings.notion_token_v2)
+notion_client: NotionClient = NotionClientWithSmallLimit(token_v2=settings.notion_token_v2)
 notion_page_url: Optional[str] = settings.notion_page_url
 
 
