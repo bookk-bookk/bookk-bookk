@@ -10,7 +10,7 @@ httptools==0.1.1
 idna==2.9
 multidict==4.7.6
 notion==0.0.25
-pydantic==1.5.1
+pydantic==1.6.2
 python-dotenv==0.13.0
 python-multipart==0.0.5
 slackclient==2.7.1
