@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import enum
 import re
-from dataclasses import dataclass
 from typing import Optional
+
+from pydantic import BaseModel
 
 
 class BookCategories(enum.Enum):
@@ -27,8 +28,7 @@ LINK_REGEX = (
 )
 
 
-@dataclass(repr=True)
-class Book:
+class Book(BaseModel):
     category: str
     link: str
     recommend_reason: str
@@ -50,3 +50,31 @@ class Book:
 
         self.link = self.link.strip()
         return self.link
+
+
+class SlackResponse(BaseModel):
+    ok: bool
+    error: Optional[str]
+
+
+class UserProfile(BaseModel):
+    real_name: str
+
+
+class UserProfileResponse(SlackResponse):
+    profile: UserProfile
+
+
+class Identifier(BaseModel):
+    id: str
+
+
+class SubmitRequestPayload(BaseModel):
+    type: str
+    submission: Book
+    user: Identifier
+    channel: Identifier
+
+
+class SubmitRequest(BaseModel):
+    payload: str
