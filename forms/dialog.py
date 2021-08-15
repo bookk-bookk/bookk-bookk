@@ -1,54 +1,44 @@
-from dataclasses import dataclass
 from typing import List, Optional
+
+from pydantic import BaseModel
 
 from forms.book import BookCategories
 
 
-@dataclass(repr=True)
-class DialogOption:
+class DialogOption(BaseModel):
     label: str
     value: str
 
 
-@dataclass(repr=True)
-class DialogOptionGroup:
+class DialogOptionGroup(BaseModel):
     label: str
     options: List[DialogOption]
 
 
-@dataclass(repr=True)
-class DialogElement:
+class DialogElement(BaseModel):
     label: str
     name: str
     type: str
     option_groups: Optional[List[DialogOptionGroup]] = None
     subtype: Optional[str] = None
 
-
-@dataclass(repr=True, eq=True)
-class DialogFormat:
-    title: str
-    elements: List[DialogElement]
-    submit_label: str = "submit"
-    callback_id: str = "bookk-bookk"
-    notify_on_cancel: bool = True
-
     @classmethod
     def get_book_category_ogs(cls) -> List[DialogOptionGroup]:
         option_groups = []
         for category in BookCategories:
             main, subs = category.value
-            options = [DialogOption(label=sub, value=sub) for sub in subs]
-            group = DialogOptionGroup(label=main, options=options)
+            group = DialogOptionGroup(label=main, options=[DialogOption(label=sub, value=sub) for sub in subs])
             option_groups.append(group)
         return option_groups
 
 
-book_dialog_format = DialogFormat(
-    title="책을 공유해주세요.",
-    elements=[
-        DialogElement(label="카테고리", name="category", type="select", option_groups=DialogFormat.get_book_category_ogs()),
-        DialogElement(label="도서링크", name="link", type="text", subtype="url"),
-        DialogElement(label="추천이유", name="recommend_reason", type="textarea"),
-    ],
-)
+class Dialog(BaseModel):
+    title: str
+    elements: List[DialogElement]
+    submit_label: str = "submit"
+    callback_id: str
+    notify_on_cancel: bool = True
+
+
+class DialogTrigger(BaseModel):
+    trigger_id: str
