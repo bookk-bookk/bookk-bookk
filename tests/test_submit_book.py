@@ -103,7 +103,7 @@ def test_submit_book_fail_by_wrong_url_1(mocker, submit_payload):
     mocker.patch("app.event_loop.call_later")
 
     submit_payload["submission"]["link"] = "htt://www.google.com"
-    response = client.post("/submit-book/", data={"payload": json.dumps(submit_payload)})
+    response = client.post("/submit-book/", json={"payload": json.dumps(submit_payload)})
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}
@@ -119,7 +119,7 @@ def test_submit_book_fail_by_wrong_url_2(mocker, submit_payload):
     mocker.patch("app.event_loop.call_later")
 
     submit_payload["submission"]["link"] = "://www.google.com"
-    response = client.post("/submit-book/", data={"payload": json.dumps(submit_payload)})
+    response = client.post("/submit-book/", json={"payload": json.dumps(submit_payload)})
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}
@@ -137,7 +137,7 @@ def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock
     mocker.patch("app.post_book_to_notion")
     mocker.patch("app.event_loop.call_later")
 
-    response = client.post("/submit-book/", data={"payload": json.dumps(submit_payload)})
+    response = client.post("/submit-book/", json={"payload": json.dumps(submit_payload)})
 
     assert response.status_code == HTTPStatus.OK
     assert not response.content
@@ -158,23 +158,6 @@ def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock
     )
 
 
-@pytest.mark.parametrize("user_profile", [USER_PROFILE_FAIL_BODY])
-@pytest.mark.parametrize("post_result", [POST_MESSAGE_FAIL_BODY])
-def test_submit_book_fail_to_get_user_profile(mocker, submit_payload, mock_user_profile_get, mock_post_message):
-    mocker.patch("app.slack_client.users_profile_get", MagicMock(return_value=mock_user_profile_get))
-    mocker.patch("app.slack_client.chat_postMessage", MagicMock(return_value=mock_post_message))
-    mocker.patch("app.event_loop.call_later")
-
-    response = client.post("/submit-book/", data={"payload": json.dumps(submit_payload)})
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.content.decode() == USER_PROFILE_FAIL_BODY["error"]
-
-    slack_client.users_profile_get.assert_called_once_with(user=submit_payload["user"]["id"])
-    slack_client.chat_postMessage.assert_not_called()
-    event_loop.call_later.assert_not_called()
-
-
 @pytest.mark.parametrize("user_profile", [USER_PROFILE_SUCCESS_BODY])
 @pytest.mark.parametrize("post_result", [POST_MESSAGE_FAIL_BODY])
 def test_submit_book_fail_to_post_message(mocker, submit_payload, mock_user_profile_get, mock_post_message):
@@ -182,7 +165,7 @@ def test_submit_book_fail_to_post_message(mocker, submit_payload, mock_user_prof
     mocker.patch("app.slack_client.chat_postMessage", MagicMock(return_value=mock_post_message))
     mocker.patch("app.event_loop.call_later")
 
-    response = client.post("/submit-book/", data={"payload": json.dumps(submit_payload)})
+    response = client.post("/submit-book/", json={"payload": json.dumps(submit_payload)})
 
     assert response.status_code == HTTPStatus.OK
     assert response.content.decode() == POST_MESSAGE_FAIL_BODY["error"]

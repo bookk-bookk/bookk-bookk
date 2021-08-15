@@ -77,7 +77,7 @@ async def submit_book(request: SubmitRequest) -> Response:
 
     post_message_res = SlackResponse.parse_obj(
         await slack_client.chat_postMessage(  # type: ignore
-            channel=payload.channel.id, text=SUCCESS_MESSAGE.format(book.dict()),
+            channel=payload.channel.id, text=SUCCESS_MESSAGE.format(**book.dict()),
         )
     )
     if not post_message_res.ok:
