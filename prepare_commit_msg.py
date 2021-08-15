@@ -4,7 +4,7 @@ import sys
 
 
 BRANCHES_TO_SKIP = ["develop", "master", "test-release", "live-release"]
-ISSUE_NUMBER_REGEX = "[a-z]+#[0-9]+$"
+ISSUE_NUMBER_REGEX = "[0-9]+$"
 
 
 def prepare_commit_msg(commit_editmsg_path):
@@ -21,7 +21,7 @@ def prepare_commit_msg(commit_editmsg_path):
     with open(commit_editmsg_path, mode="r+") as f:
         msg = f.read()
         f.seek(0, 0)
-        f.write("{issue_number} {msg}".format(issue_number=issue_number, msg=msg))
+        f.write("#{issue_number} {msg}".format(issue_number=issue_number, msg=msg))
 
 
 if __name__ == "__main__":
