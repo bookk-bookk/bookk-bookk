@@ -6,8 +6,8 @@ from typing import Optional
 from slack import WebClient
 from slack.web.slack_response import SlackResponse
 
-from helper import get_books_from_notion
-from settings import settings
+from apps.helper import get_books_from_notion
+from apps.settings import settings
 
 
 logger = logging.getLogger()

@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 import pytest  # type: ignore
 from fastapi.testclient import TestClient
 
-from app import app, slack_client, SUCCESS_MESSAGE, event_loop
-from forms.book import Book
+from apps.app import app, slack_client, SUCCESS_MESSAGE, event_loop
+from apps.forms.book import Book
 
 client = TestClient(app)
 
@@ -149,7 +149,7 @@ def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock
         ),
         channel=submit_payload["channel"]["id"],
     )
-    from app import post_book_to_notion
+    from apps.app import post_book_to_notion
 
     event_loop.call_later.assert_called_once_with(
         0,

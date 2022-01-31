@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 import pytest  # type: ignore
 
 from fastapi.testclient import TestClient
-from app import app, slack_client
+from apps.app import app, slack_client
 
 
 client = TestClient(app)

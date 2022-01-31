@@ -7,10 +7,10 @@ from typing import Optional
 from fastapi import FastAPI, Response
 from slack import WebClient
 
-from helper import post_book_to_notion
-from forms.book import SubmitRequest, UserProfileResponse, SlackResponse, SubmitRequestPayload
-from forms.dialog import DialogTrigger, Dialog, DialogElement
-from settings import settings
+from apps.helper import post_book_to_notion
+from apps.forms.book import SubmitRequest, UserProfileResponse, SlackResponse, SubmitRequestPayload
+from apps.forms.dialog import DialogTrigger, Dialog, DialogElement
+from apps.settings import settings
 
 app = FastAPI()
 event_loop = asyncio.get_event_loop()

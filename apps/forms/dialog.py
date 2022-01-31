@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from forms.book import BookCategories
+from apps.forms.book import BookCategories
 
 
 class DialogOption(BaseModel):
