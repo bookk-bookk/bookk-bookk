@@ -1,6 +1,7 @@
 version: 2
 
 jobs:
+  branches:
   build:
     working_directory: ~/bookk-bookk
     docker:
@@ -9,39 +10,21 @@ jobs:
     steps:
       - checkout
 
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "requirements_local.txt" }}
-            - v1-dependencies-
-
-      - run:
-          name: Set virtualenv
-          command: |
-            python -m venv venv
-            . venv/bin/activate
       - run:
           name: Lint Dockerfile
           command: hadolint Dockerfile --ignore DL3013 --ignore DL3025
 
       - run:
-          name: Install dependencies
-          command: |
-            pip install -r requirements_local.txt
-            pip install flake8==3.8.3
-
+          name: Install Packages
+          command: poetry install --no-root
       - run:
           name: Lint Python code
-          command: flake8 --ignore E501 --max-complexity 10 --exclude ./venv
+          command: poetry run flake8 --ignore E501 --max-complexity 10 --exclude ./venv
 
       - run:
           name: Type check with mypy
-          command: mypy .
+          command: poetry run mypy .
 
       - run:
           name: Execute Pytest
-          command: pytest tests
-
-      - save_cache:
-          paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "requirements_local.txt" }}
+          command: poetry run pytest tests
