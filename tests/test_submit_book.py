@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 
 from app import app, slack_client, SUCCESS_MESSAGE, event_loop
 from forms.book import Book
+from tests.common import MockSlackResponse
 
 client = TestClient(app)
 
@@ -46,55 +47,53 @@ def submit_payload():
     }
 
 
-USER_PROFILE_SUCCESS_BODY = {
-    "ok": True,
-    "profile": {
-        "avatar_hash": "ge3b51ca72de",
-        "status_text": "Print is dead",
-        "status_emoji": ":books:",
-        "status_expiration": 0,
-        "real_name": "Egon Spengler",
-        "display_name": "spengler",
-        "real_name_normalized": "Egon Spengler",
-        "display_name_normalized": "spengler",
-        "email": "spengler@ghostbusters.example.com",
-        "image_original": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
-        "image_24": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
-        "image_32": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
-        "image_48": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
-        "image_72": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
-        "image_192": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
-        "image_512": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
-        "team": "T012AB3C4",
-    },
-}
+USER_PROFILE_SUCCESS_BODY = MockSlackResponse(
+    data={
+        "ok": True,
+        "profile": {
+            "avatar_hash": "ge3b51ca72de",
+            "status_text": "Print is dead",
+            "status_emoji": ":books:",
+            "status_expiration": 0,
+            "real_name": "Egon Spengler",
+            "display_name": "spengler",
+            "real_name_normalized": "Egon Spengler",
+            "display_name_normalized": "spengler",
+            "email": "spengler@ghostbusters.example.com",
+            "image_original": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_24": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_32": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_48": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_72": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_192": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_512": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "team": "T012AB3C4",
+        },
+    }
+)
 
 
-POST_MESSAGE_SUCCESS_BODY = {
-    "ok": True,
-    "channel": "C1H9RESGL",
-    "ts": "1503435956.000247",
-    "message": {
-        "text": "Here's a message for you",
-        "username": "ecto1",
-        "bot_id": "B19LU7CSY",
-        "attachments": [{"text": "This is an attachment", "id": 1, "fallback": "This is an attachment's fallback"}],
-        "type": "message",
-        "subtype": "bot_message",
+POST_MESSAGE_SUCCESS_BODY = MockSlackResponse(
+    data={
+        "ok": True,
+        "channel": "C1H9RESGL",
         "ts": "1503435956.000247",
-    },
-}
+        "message": {
+            "text": "Here's a message for you",
+            "username": "ecto1",
+            "bot_id": "B19LU7CSY",
+            "attachments": [{"text": "This is an attachment", "id": 1, "fallback": "This is an attachment's fallback"}],
+            "type": "message",
+            "subtype": "bot_message",
+            "ts": "1503435956.000247",
+        },
+    }
+)
 
 
-USER_PROFILE_FAIL_BODY = {
-    "ok": False,
-    "error": "user_not_found",
-}
+USER_PROFILE_FAIL_BODY = MockSlackResponse(data={"ok": False, "error": "user_not_found"})
 
-POST_MESSAGE_FAIL_BODY = {
-    "ok": False,
-    "error": "too_many_attachments",
-}
+POST_MESSAGE_FAIL_BODY = MockSlackResponse(data={"ok": False, "error": "too_many_attachments"})
 
 
 def test_submit_book_fail_by_wrong_url_1(mocker, submit_payload):
@@ -103,7 +102,11 @@ def test_submit_book_fail_by_wrong_url_1(mocker, submit_payload):
     mocker.patch("app.event_loop.call_later")
 
     submit_payload["submission"]["link"] = "htt://www.google.com"
-    response = client.post("/submit-book/", json={"payload": json.dumps(submit_payload)})
+    response = client.post(
+        "/submit-book/",
+        data={"payload": json.dumps(submit_payload)},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}
@@ -119,7 +122,11 @@ def test_submit_book_fail_by_wrong_url_2(mocker, submit_payload):
     mocker.patch("app.event_loop.call_later")
 
     submit_payload["submission"]["link"] = "://www.google.com"
-    response = client.post("/submit-book/", json={"payload": json.dumps(submit_payload)})
+    response = client.post(
+        "/submit-book/",
+        data={"payload": json.dumps(submit_payload)},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}
@@ -137,7 +144,11 @@ def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock
     mocker.patch("app.post_book_to_notion")
     mocker.patch("app.event_loop.call_later")
 
-    response = client.post("/submit-book/", json={"payload": json.dumps(submit_payload)})
+    response = client.post(
+        "/submit-book/",
+        data={"payload": json.dumps(submit_payload)},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert not response.content
@@ -145,7 +156,7 @@ def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock
     slack_client.users_profile_get.assert_called_once_with(user=submit_payload["user"]["id"])
     slack_client.chat_postMessage.assert_called_once_with(
         text=SUCCESS_MESSAGE.format(
-            **submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY["profile"]["real_name"],
+            **submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY.data["profile"]["real_name"],
         ),
         channel=submit_payload["channel"]["id"],
     )
@@ -154,7 +165,7 @@ def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock
     event_loop.call_later.assert_called_once_with(
         0,
         post_book_to_notion,
-        Book(**submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY["profile"]["real_name"],),
+        Book(**submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY.data["profile"]["real_name"],),
     )
 
 
@@ -165,15 +176,19 @@ def test_submit_book_fail_to_post_message(mocker, submit_payload, mock_user_prof
     mocker.patch("app.slack_client.chat_postMessage", MagicMock(return_value=mock_post_message))
     mocker.patch("app.event_loop.call_later")
 
-    response = client.post("/submit-book/", json={"payload": json.dumps(submit_payload)})
+    response = client.post(
+        "/submit-book/",
+        data={"payload": json.dumps(submit_payload)},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.content.decode() == POST_MESSAGE_FAIL_BODY["error"]
+    assert response.content.decode() == POST_MESSAGE_FAIL_BODY.data["error"]
 
     slack_client.users_profile_get.assert_called_once_with(user=submit_payload["user"]["id"])
     slack_client.chat_postMessage.assert_called_once_with(
         text=SUCCESS_MESSAGE.format(
-            **submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY["profile"]["real_name"],
+            **submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY.data["profile"]["real_name"],
         ),
         channel=submit_payload["channel"]["id"],
     )

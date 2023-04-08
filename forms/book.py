@@ -72,7 +72,3 @@ class SubmitRequestPayload(BaseModel):
     submission: Book
     user: Identifier
     channel: Identifier
-
-
-class SubmitRequest(BaseModel):
-    payload: str

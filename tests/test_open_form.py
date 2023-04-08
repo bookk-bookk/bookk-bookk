@@ -7,7 +7,7 @@ import pytest  # type: ignore
 
 from fastapi.testclient import TestClient
 from app import app, slack_client
-
+from tests.common import MockSlackResponse
 
 client = TestClient(app)
 
@@ -157,7 +157,7 @@ def mock_dialog_open(response):
     return f
 
 
-@pytest.mark.parametrize("response", [{"ok": True, "error": ""}])
+@pytest.mark.parametrize("response", [MockSlackResponse({"ok": True, "error": ""})])
 def test_open_form_succeed(mocker, dialog_form_data, dialog_format, mock_uuid, mock_dialog_open):
     mocker.patch("app.slack_client.dialog_open", MagicMock(return_value=mock_dialog_open))
     mocker.patch("uuid.UUID", mock_uuid)
@@ -170,7 +170,7 @@ def test_open_form_succeed(mocker, dialog_form_data, dialog_format, mock_uuid, m
     slack_client.dialog_open.assert_called_once_with(trigger_id=dialog_form_data["trigger_id"], dialog=dialog_format)
 
 
-@pytest.mark.parametrize("response", [{"ok": False, "error": "some-error"}])
+@pytest.mark.parametrize("response", [MockSlackResponse({"ok": False, "error": "some-error"})])
 def test_open_form_fail(mocker, dialog_form_data, dialog_format, mock_uuid, mock_dialog_open):
     mocker.patch("app.slack_client.dialog_open", MagicMock(return_value=mock_dialog_open))
     mocker.patch("uuid.UUID", mock_uuid)
