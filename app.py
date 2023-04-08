@@ -1,4 +1,3 @@
-import asyncio
 import json
 import uuid
 from http import HTTPStatus
@@ -6,6 +5,7 @@ from typing import Optional, Annotated
 
 from fastapi import FastAPI, Response, Form
 from slack import WebClient
+from starlette.background import BackgroundTasks
 from starlette.requests import Request
 
 from helper import post_book_to_notion
@@ -14,7 +14,6 @@ from forms.dialog import Dialog, DialogElement
 from settings import settings
 
 app = FastAPI()
-event_loop = asyncio.get_event_loop()
 
 slack_token: Optional[str] = settings.slack_api_token
 slack_client = WebClient(token=slack_token, run_async=True)
@@ -58,7 +57,7 @@ async def open_form(trigger_id: Annotated[str, Form()]) -> Response:
 
 
 @app.post("/submit-book/")
-async def submit_book(request: Request) -> Response:
+async def submit_book(request: Request, background_tasks: BackgroundTasks) -> Response:
     # submit_book 파라미터에 직접 정의한 pydantic 모델 가지고 타입 어노테이션이 안되서 form 파싱 하는 것으로 대체.
     form = await request.form()
     payload = SubmitRequestPayload.parse_obj(json.loads(form.get("payload")))
@@ -86,7 +85,6 @@ async def submit_book(request: Request) -> Response:
     if not post_message_res.ok:
         return Response(content=post_message_res.error)
 
-    # posting to notion is intended to run background.
-    event_loop.call_later(0, post_book_to_notion, book)
+    background_tasks.add_task(post_book_to_notion, book)
 
     return Response()
