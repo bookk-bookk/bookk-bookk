@@ -1,0 +1,45 @@
+on: push
+
+jobs:
+  common:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Checkout Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9.16
+        architecture: 'x64'
+
+    - name: Get Python Version
+      id: get-python-version
+      run: |
+        python -c "import sys; print('::set-output name=version::' + '-'.join(map(str, sys.version_info)))"
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        poetry config virtualenvs.in-project false
+        poetry config virtualenvs.path ~/.virtualenvs
+
+    - name: Cache Poetry Virtualenv
+      uses: actions/cache@v3
+      id: cache-poetry-virtualenv
+      with:
+        path: ~/.virtualenvs
+        key: venv-v2-${{ steps.get-python-version.outputs.version }}-${{ hashFiles('poetry.lock') }}
+
+    - name: Install Python Packages
+      run: |
+        poetry install --no-root
+      if: steps.cache-poetry-virtualenv.outputs.cache-hit != 'true'
+
+    - name: Lint
+      run: |
+        poetry run flake8 --ignore E501 --max-complexity 10
+
+    - name: Run Tests
+      run: |
+        poetry run pytest -vv --cache-clear
