@@ -4,9 +4,10 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest  # type: ignore
+from asynctest import patch
 from fastapi.testclient import TestClient
 
-from app import app, slack_client, SUCCESS_MESSAGE, event_loop
+from app import app, slack_client, SUCCESS_MESSAGE
 from forms.book import Book
 from tests.common import MockSlackResponse
 
@@ -99,7 +100,6 @@ POST_MESSAGE_FAIL_BODY = MockSlackResponse(data={"ok": False, "error": "too_many
 def test_submit_book_fail_by_wrong_url_1(mocker, submit_payload):
     mocker.patch("app.slack_client.users_profile_get")
     mocker.patch("app.slack_client.chat_postMessage")
-    mocker.patch("app.event_loop.call_later")
 
     submit_payload["submission"]["link"] = "htt://www.google.com"
     response = client.post(
@@ -113,13 +113,11 @@ def test_submit_book_fail_by_wrong_url_1(mocker, submit_payload):
 
     slack_client.users_profile_get.assert_not_called()
     slack_client.chat_postMessage.assert_not_called()
-    event_loop.call_later.assert_not_called()
 
 
 def test_submit_book_fail_by_wrong_url_2(mocker, submit_payload):
     mocker.patch("app.slack_client.users_profile_get")
     mocker.patch("app.slack_client.chat_postMessage")
-    mocker.patch("app.event_loop.call_later")
 
     submit_payload["submission"]["link"] = "://www.google.com"
     response = client.post(
@@ -133,7 +131,6 @@ def test_submit_book_fail_by_wrong_url_2(mocker, submit_payload):
 
     slack_client.users_profile_get.assert_not_called()
     slack_client.chat_postMessage.assert_not_called()
-    event_loop.call_later.assert_not_called()
 
 
 @pytest.mark.parametrize("user_profile", [USER_PROFILE_SUCCESS_BODY])
@@ -141,14 +138,13 @@ def test_submit_book_fail_by_wrong_url_2(mocker, submit_payload):
 def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock_post_message):
     mocker.patch("app.slack_client.users_profile_get", MagicMock(return_value=mock_user_profile_get))
     mocker.patch("app.slack_client.chat_postMessage", MagicMock(return_value=mock_post_message))
-    mocker.patch("app.post_book_to_notion")
-    mocker.patch("app.event_loop.call_later")
 
-    response = client.post(
-        "/submit-book/",
-        data={"payload": json.dumps(submit_payload)},
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-    )
+    with patch("app.post_book_to_notion") as mock_post_notion:
+        response = client.post(
+            "/submit-book/",
+            data={"payload": json.dumps(submit_payload)},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
 
     assert response.status_code == HTTPStatus.OK
     assert not response.content
@@ -160,12 +156,8 @@ def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock
         ),
         channel=submit_payload["channel"]["id"],
     )
-    from app import post_book_to_notion
-
-    event_loop.call_later.assert_called_once_with(
-        0,
-        post_book_to_notion,
-        Book(**submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY.data["profile"]["real_name"],),
+    mock_post_notion.assert_called_once_with(
+        Book(**submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY.data["profile"]["real_name"]),
     )
 
 
@@ -174,13 +166,13 @@ def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock
 def test_submit_book_fail_to_post_message(mocker, submit_payload, mock_user_profile_get, mock_post_message):
     mocker.patch("app.slack_client.users_profile_get", MagicMock(return_value=mock_user_profile_get))
     mocker.patch("app.slack_client.chat_postMessage", MagicMock(return_value=mock_post_message))
-    mocker.patch("app.event_loop.call_later")
 
-    response = client.post(
-        "/submit-book/",
-        data={"payload": json.dumps(submit_payload)},
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-    )
+    with patch("app.post_book_to_notion") as mock_post_notion:
+        response = client.post(
+            "/submit-book/",
+            data={"payload": json.dumps(submit_payload)},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
 
     assert response.status_code == HTTPStatus.OK
     assert response.content.decode() == POST_MESSAGE_FAIL_BODY.data["error"]
@@ -192,4 +184,4 @@ def test_submit_book_fail_to_post_message(mocker, submit_payload, mock_user_prof
         ),
         channel=submit_payload["channel"]["id"],
     )
-    event_loop.call_later.assert_not_called()
+    mock_post_notion.assert_not_called()

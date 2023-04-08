@@ -25,7 +25,7 @@ notion_client: NotionClient = NotionClientWithSmallLimit(token_v2=settings.notio
 notion_page_url: Optional[str] = settings.notion_page_url
 
 
-def post_book_to_notion(book: Book) -> None:
+async def post_book_to_notion(book: Book) -> None:
     page = notion_client.get_collection_view(notion_page_url)
     new_row = page.collection.add_row()
 
