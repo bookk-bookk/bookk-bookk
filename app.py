@@ -59,7 +59,7 @@ async def open_form(trigger_id: Annotated[str, Form()]) -> Response:
 async def submit_book(request: Request) -> Response:
     # submit_book 파라미터에 직접 정의한 pydantic 모델 가지고 타입 어노테이션이 안되서 form 파싱 하는 것으로 대체.
     form = await request.form()
-    payload = SubmitRequestPayload.parse_obj(eval(form.get("payload")))
+    payload = SubmitRequestPayload.parse_obj(json.loads(form.get("payload")))
     if payload.type != DIALOG_SUBMIT_DONE:
         return Response(status_code=HTTPStatus.BAD_REQUEST)
 
