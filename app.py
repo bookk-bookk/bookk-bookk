@@ -49,7 +49,7 @@ async def open_form(trigger_id: Annotated[str, Form()]) -> Response:
                 ).dict(),
                 trigger_id=trigger_id,
             )
-        ).dict(),
+        ).data,
     )
 
     if response.ok:
