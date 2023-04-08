@@ -103,7 +103,11 @@ def test_submit_book_fail_by_wrong_url_1(mocker, submit_payload):
     mocker.patch("app.event_loop.call_later")
 
     submit_payload["submission"]["link"] = "htt://www.google.com"
-    response = client.post("/submit-book/", json={"payload": json.dumps(submit_payload)})
+    response = client.post(
+        "/submit-book/",
+        data={"payload": json.dumps(submit_payload)},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}
@@ -119,7 +123,11 @@ def test_submit_book_fail_by_wrong_url_2(mocker, submit_payload):
     mocker.patch("app.event_loop.call_later")
 
     submit_payload["submission"]["link"] = "://www.google.com"
-    response = client.post("/submit-book/", json={"payload": json.dumps(submit_payload)})
+    response = client.post(
+        "/submit-book/",
+        data={"payload": json.dumps(submit_payload)},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}
@@ -137,7 +145,11 @@ def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock
     mocker.patch("app.post_book_to_notion")
     mocker.patch("app.event_loop.call_later")
 
-    response = client.post("/submit-book/", json={"payload": json.dumps(submit_payload)})
+    response = client.post(
+        "/submit-book/",
+        data={"payload": json.dumps(submit_payload)},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert not response.content
@@ -165,7 +177,11 @@ def test_submit_book_fail_to_post_message(mocker, submit_payload, mock_user_prof
     mocker.patch("app.slack_client.chat_postMessage", MagicMock(return_value=mock_post_message))
     mocker.patch("app.event_loop.call_later")
 
-    response = client.post("/submit-book/", json={"payload": json.dumps(submit_payload)})
+    response = client.post(
+        "/submit-book/",
+        data={"payload": json.dumps(submit_payload)},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.content.decode() == POST_MESSAGE_FAIL_BODY["error"]
