@@ -38,7 +38,3 @@ class Dialog(BaseModel):
     submit_label: str = "submit"
     callback_id: str
     notify_on_cancel: bool = True
-
-
-class DialogTrigger(BaseModel):
-    trigger_id: str

@@ -2,14 +2,14 @@ import asyncio
 import json
 import uuid
 from http import HTTPStatus
-from typing import Optional
+from typing import Optional, Annotated
 
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, Form
 from slack import WebClient
 
 from helper import post_book_to_notion
 from forms.book import SubmitRequest, UserProfileResponse, SlackResponse, SubmitRequestPayload
-from forms.dialog import DialogTrigger, Dialog, DialogElement
+from forms.dialog import Dialog, DialogElement
 from settings import settings
 
 app = FastAPI()
@@ -28,7 +28,7 @@ SUCCESS_MESSAGE: str = """
 
 
 @app.post("/open-form/")
-async def open_form(request: DialogTrigger) -> Response:
+async def open_form(trigger_id: Annotated[str, Form()]) -> Response:
     response = SlackResponse.parse_obj(
         await slack_client.dialog_open(  # type: ignore
             dialog=Dialog(
@@ -45,7 +45,7 @@ async def open_form(request: DialogTrigger) -> Response:
                     DialogElement(label="추천이유", name="recommend_reason", type="textarea"),
                 ],
             ).dict(),
-            trigger_id=request.trigger_id,
+            trigger_id=trigger_id,
         )
     )
 
