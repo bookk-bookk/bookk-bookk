@@ -41,5 +41,8 @@ jobs:
         poetry run flake8 --ignore E501 --max-complexity 10
 
     - name: Run Tests
+      env:
+        NOTION_PAGE_URL: ${{ secrets.NOTION_PAGE_URL }}
+        NOTION_TOKEN_V2: ${{ secrets.NOTION_TOKEN_V2 }}
       run: |
         poetry run pytest -vv --cache-clear
