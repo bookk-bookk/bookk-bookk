@@ -31,23 +31,25 @@ SUCCESS_MESSAGE: str = """
 @app.post("/open-form/")
 async def open_form(trigger_id: Annotated[str, Form()]) -> Response:
     response = SlackResponse.parse_obj(
-        await slack_client.dialog_open(  # type: ignore
-            dialog=Dialog(
-                title="책을 공유해주세요.",
-                callback_id=uuid.uuid4().hex,
-                elements=[
-                    DialogElement(
-                        label="카테고리",
-                        name="category",
-                        type="select",
-                        option_groups=DialogElement.get_book_category_ogs(),
-                    ),
-                    DialogElement(label="도서링크", name="link", type="text", subtype="url"),
-                    DialogElement(label="추천이유", name="recommend_reason", type="textarea"),
-                ],
-            ).dict(),
-            trigger_id=trigger_id,
-        )
+        (
+            await slack_client.dialog_open(  # type: ignore
+                dialog=Dialog(
+                    title="책을 공유해주세요.",
+                    callback_id=uuid.uuid4().hex,
+                    elements=[
+                        DialogElement(
+                            label="카테고리",
+                            name="category",
+                            type="select",
+                            option_groups=DialogElement.get_book_category_ogs(),
+                        ),
+                        DialogElement(label="도서링크", name="link", type="text", subtype="url"),
+                        DialogElement(label="추천이유", name="recommend_reason", type="textarea"),
+                    ],
+                ).dict(),
+                trigger_id=trigger_id,
+            )
+        ).dict(),
     )
 
     if response.ok:
@@ -71,17 +73,15 @@ async def submit_book(request: Request) -> Response:
         )
 
     user_profile_res = UserProfileResponse.parse_obj(
-        await slack_client.users_profile_get(  # type: ignore
-            user=payload.user.id,
-        )
+        (await slack_client.users_profile_get(user=payload.user.id,)).data,
     )
 
     book.recommender = user_profile_res.profile.real_name
 
     post_message_res = SlackResponse.parse_obj(
-        await slack_client.chat_postMessage(  # type: ignore
-            channel=payload.channel.id, text=SUCCESS_MESSAGE.format(**book.dict()),
-        )
+        (
+            await slack_client.chat_postMessage(channel=payload.channel.id, text=SUCCESS_MESSAGE.format(**book.dict()),)
+        ).data,
     )
     if not post_message_res.ok:
         return Response(content=post_message_res.error)
