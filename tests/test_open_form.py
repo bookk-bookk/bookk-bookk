@@ -162,7 +162,9 @@ def test_open_form_succeed(mocker, dialog_form_data, dialog_format, mock_uuid, m
     mocker.patch("app.slack_client.dialog_open", MagicMock(return_value=mock_dialog_open))
     mocker.patch("uuid.UUID", mock_uuid)
 
-    response = client.post("/open-form/", json=dialog_form_data)
+    response = client.post(
+        "/open-form/", data=dialog_form_data, headers={"Content-Type": "application/x-www-form-urlencoded"}
+    )
     assert response.status_code == HTTPStatus.OK
 
     slack_client.dialog_open.assert_called_once_with(trigger_id=dialog_form_data["trigger_id"], dialog=dialog_format)
@@ -173,8 +175,9 @@ def test_open_form_fail(mocker, dialog_form_data, dialog_format, mock_uuid, mock
     mocker.patch("app.slack_client.dialog_open", MagicMock(return_value=mock_dialog_open))
     mocker.patch("uuid.UUID", mock_uuid)
 
-    response = client.post("/open-form/", json=dialog_form_data)
-
+    response = client.post(
+        "/open-form/", data=dialog_form_data, headers={"Content-Type": "application/x-www-form-urlencoded"}
+    )
     assert response.status_code == HTTPStatus.OK
     assert response.content.decode() == "some-error"
 
