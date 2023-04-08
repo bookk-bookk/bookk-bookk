@@ -1,4 +1,4 @@
-# bookk-bookk [![bookk-bookk](https://circleci.com/gh/bookk-bookk/bookk-bookk.svg?style=svg)](https://app.circleci.com/pipelines/github/bookk-bookk)
+# bookk-bookk
 
 ### 슬랙 무료플랜을 사용하는 북클럽을 위한 슬랙봇 '북크북크'
 
