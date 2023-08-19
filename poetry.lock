@@ -924,7 +924,7 @@ cli = ["click (>=5.0)"]
 name = "python-multipart"
 version = "0.0.6"
 description = "A streaming multipart parser for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1207,4 +1207,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "3.9.16"
-content-hash = "4784435cca9d74c4b5bd7be0cdab0352e9756f565a6fbf4be6b7b98d33416757"
+content-hash = "602430f29f5c8926d2d7daa048fe46e9bf168cacd6661a089b0db354a5fc221a"
