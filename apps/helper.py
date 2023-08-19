@@ -1,52 +1,69 @@
 import logging
-import requests
-from typing import Optional
-from urllib.parse import quote_plus
+from http import HTTPStatus
 
-from notion.block import ImageBlock  # type: ignore
-from notion.client import NotionClient  # type: ignore
+import httpx
+from urllib.parse import quote_plus, urljoin
 
-from patch_client import NotionClientWithSmallLimit
+from apps.dtos.notion.book_submission import BookSubmission, BookSubmissionProperties
+from apps.dtos.notion.database import Database
+from apps.dtos.notion.image_block import ImageBlock, Image, ImageUrl
+from apps.dtos.notion.text import (
+    Title,
+    TextContent,
+    Content,
+    BookUrl,
+    Category,
+    CategoryName,
+    Recommender,
+    RecommendReason,
+)
 from apps.settings import settings
 from apps.dtos.book import Book
 
 OPEN_GRAPH_BASE_URL: str = "https://opengraph.io/api/1.1/site/{book_link}"
+NOTION_API_BASE_URL = "https://api.notion.com"
 
 
-def get_og_tags(book_link: str) -> dict:
-    response = requests.get(
-        OPEN_GRAPH_BASE_URL.format(book_link=quote_plus(book_link, encoding="UTF-8")),
-        params={"app_id": settings.og_app_id},  # type: ignore
-    )
+logger = logging.getLogger(__name__)
+
+
+async def get_og_tags(book_link: str) -> dict:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            OPEN_GRAPH_BASE_URL.format(book_link=quote_plus(book_link, encoding="UTF-8")),
+            params={"app_id": settings.og_app_id},  # type: ignore
+        )
     return response.json()
 
 
-notion_client: NotionClient = NotionClientWithSmallLimit(token_v2=settings.notion_token_v2)
-notion_page_url: Optional[str] = settings.notion_page_url
-
-
 async def post_book_to_notion(book: Book) -> None:
-    page = notion_client.get_collection_view(notion_page_url)
-    new_row = page.collection.add_row()
-
-    new_row.category = [book.category, book.parent_category]
-    new_row.URL = book.link
-    new_row.recommend_reason = book.recommend_reason
-    new_row.recommender = book.recommender
-
-    response = get_og_tags(book.link)
+    response = await get_og_tags(book.link)
     try:
         og_tags = response["openGraph"]
     except KeyError:
-        logging.error("Failed to parse OpenGraph::{}".format(response))
+        logger.error("Failed to parse OpenGraph::{}".format(response))
         return
 
-    new_row.title = og_tags["title"]
-
-    image_block = new_row.children.add_new(ImageBlock)
-    image_block.set_source_url(og_tags["image"]["url"])
-
-
-def get_books_from_notion():
-    page = notion_client.get_collection_view(notion_page_url)
-    return page.default_query().execute()
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            urljoin(NOTION_API_BASE_URL, "v1/pages/"),
+            headers={"Authorization": f"Bearer {settings.notion_secret_key}", "Notion-Version": "2022-06-28"},
+            json=BookSubmission(
+                parent=Database(),
+                properties=BookSubmissionProperties(
+                    title=Title(title=[TextContent(text=Content(content=og_tags["title"]))]),
+                    URL=BookUrl(url=book.link),
+                    category=Category(
+                        multi_select=[CategoryName(name=book.category), CategoryName(name=book.parent_category)],
+                    ),
+                    recommender=Recommender(rich_text=[TextContent(text=Content(content=book.recommender))]),
+                    recommend_reason=RecommendReason(
+                        rich_text=[TextContent(text=Content(content=book.recommend_reason))],
+                    ),
+                ),
+                children=[ImageBlock(image=Image(external=ImageUrl(url=og_tags["image"]["url"])))],
+            ).dict(),
+        )
+        if response.status_code != HTTPStatus.OK:
+            logger.error(f"unexpected response from Notion API server: {response.text}")
+        return

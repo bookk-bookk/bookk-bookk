@@ -8,9 +8,10 @@ from pydantic import BaseSettings
 class Settings(BaseSettings):
     slack_api_token: Optional[str] = os.getenv("SLACK_API_TOKEN")
     og_app_id: Optional[str] = os.getenv("OG_APP_ID")
-    notion_token_v2: Optional[str] = os.getenv("NOTION_TOKEN_V2")
-    notion_page_url: Optional[str] = os.getenv("NOTION_PAGE_URL")
     books_channel: Optional[str] = os.getenv("BOOKS_CHANNEL")
+
+    notion_secret_key: str = os.getenv("NOTION_SECRET_KEY")
+    notion_database_id: str = os.getenv("NOTION_DATABASE_ID")
 
 
 if os.getenv("BOOKK_ENV") != "test":
