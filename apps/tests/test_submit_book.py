@@ -210,7 +210,7 @@ class TestBookSubmission:
 
         # Then: 슬랙 채널에 알림 메세지 전송하지 않아야 함.
         assert response.status_code == HTTPStatus.OK
-        assert response.content == b"Failed to posting to notion"
+        assert not response.content
 
         mock_user_profile.assert_called_once_with(user=submit_payload["user"]["id"])
         mock_post_message.assert_not_called()
