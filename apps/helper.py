@@ -18,7 +18,7 @@ from apps.dtos.notion.text import (
     RecommendReason,
 )
 from apps.settings import settings
-from apps.dtos.book import Book
+from dtos.slack.book import Book
 
 OPEN_GRAPH_BASE_URL: str = "https://opengraph.io/api/1.1/site/{book_link}"
 NOTION_API_BASE_URL = "https://api.notion.com"

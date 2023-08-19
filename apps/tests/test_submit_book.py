@@ -7,7 +7,7 @@ import pytest  # type: ignore
 from fastapi.testclient import TestClient
 
 from apps.app import app, slack_client, SUCCESS_MESSAGE
-from apps.dtos.book import Book
+from dtos.slack.book import Book
 from apps.tests.common import MockSlackResponse
 
 client = TestClient(app)
