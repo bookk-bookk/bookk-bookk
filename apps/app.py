@@ -76,10 +76,6 @@ async def submit_book(request: Request, background_tasks: BackgroundTasks) -> Re
     )
     book.recommender = user_profile_res.profile.real_name
 
-    success = await post_book_to_notion(book)
-    if not success:
-        return Response(content="Failed to posting to notion")
-
     post_message_res = SlackResponse.parse_obj(
         (
             await slack_client.chat_postMessage(channel=payload.channel.id, text=SUCCESS_MESSAGE.format(**book.dict()))
@@ -88,4 +84,5 @@ async def submit_book(request: Request, background_tasks: BackgroundTasks) -> Re
     if not post_message_res.ok:
         return Response(content=post_message_res.error)
 
+    background_tasks.add_task(post_book_to_notion, book)
     return Response()
