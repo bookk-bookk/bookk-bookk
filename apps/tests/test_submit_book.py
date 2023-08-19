@@ -7,9 +7,9 @@ import pytest  # type: ignore
 from asynctest import patch
 from fastapi.testclient import TestClient
 
-from app import app, slack_client, SUCCESS_MESSAGE
-from forms.book import Book
-from tests.common import MockSlackResponse
+from apps.app import app, slack_client, SUCCESS_MESSAGE
+from apps.forms.book import Book
+from apps.tests.common import MockSlackResponse
 
 client = TestClient(app)
 

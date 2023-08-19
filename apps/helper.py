@@ -7,8 +7,8 @@ from notion.block import ImageBlock  # type: ignore
 from notion.client import NotionClient  # type: ignore
 
 from patch_client import NotionClientWithSmallLimit
-from settings import settings
-from forms.book import Book
+from apps.settings import settings
+from apps.forms.book import Book
 
 OPEN_GRAPH_BASE_URL: str = "https://opengraph.io/api/1.1/site/{book_link}"
 

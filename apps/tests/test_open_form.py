@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 import pytest  # type: ignore
 
 from fastapi.testclient import TestClient
-from app import app, slack_client
-from tests.common import MockSlackResponse
+from apps.app import app, slack_client
+from apps.tests.common import MockSlackResponse
 
 client = TestClient(app)
 
