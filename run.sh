@@ -1,2 +1,3 @@
 # !/bin/bash
-cd apps & gunicorn -c gunicorn.init.py app:app
+cd apps
+gunicorn -c gunicorn.init.py app:app
