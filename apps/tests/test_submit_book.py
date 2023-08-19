@@ -208,9 +208,15 @@ class TestBookSubmission:
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )
 
-        # Then: 슬랙 채널에 알림 메세지 전송하지 않아야 함.
+        # Then: 슬랙 채널에 알림 메세지 전송해야 함.
         assert response.status_code == HTTPStatus.OK
         assert not response.content
 
         mock_user_profile.assert_called_once_with(user=submit_payload["user"]["id"])
-        mock_post_message.assert_not_called()
+        mock_post_message.assert_called_once_with(
+            text=SUCCESS_MESSAGE.format(
+                **submit_payload["submission"],
+                recommender=user_profile_success_data["profile"]["real_name"],
+            ),
+            channel=submit_payload["channel"]["id"],
+        )
