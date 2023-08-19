@@ -6,10 +6,10 @@ from urllib.parse import quote_plus, urljoin
 
 from httpx import HTTPError
 
-from apps.dtos.notion.book_submission import BookSubmission, BookSubmissionProperties
-from apps.dtos.notion.database import Database
-from apps.dtos.notion.image_block import ImageBlock, Image, ImageUrl
-from apps.dtos.notion.text import (
+from dtos.notion.book_submission import BookSubmission, BookSubmissionProperties
+from dtos.notion.database import Database
+from dtos.notion.image_block import ImageBlock, Image, ImageUrl
+from dtos.notion.text import (
     Title,
     TextContent,
     Content,
@@ -19,7 +19,7 @@ from apps.dtos.notion.text import (
     Recommender,
     RecommendReason,
 )
-from apps.settings import settings
+from settings import settings
 from dtos.slack.book import Book
 
 OPEN_GRAPH_BASE_URL: str = "https://opengraph.io/api/1.1/site/{book_link}"

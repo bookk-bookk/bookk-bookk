@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from apps.settings import settings
+from settings import settings
 
 
 class Database(BaseModel):

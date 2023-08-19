@@ -1,12 +1,11 @@
 from pydantic import BaseModel
 
-from apps.dtos.notion.text import Title, BookUrl, Category, Recommender, RecommendReason
-from apps.dtos.notion.database import Database
-from apps.dtos.notion.image_block import ImageBlock
+from dtos.notion.text import Title, BookUrl, Category, Recommender, RecommendReason
+from dtos.notion.database import Database
+from dtos.notion.image_block import ImageBlock
 
 
 class BookSubmissionProperties(BaseModel):
-
     title: Title
     URL: BookUrl
     category: Category
