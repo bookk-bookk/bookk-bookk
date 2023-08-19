@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 from slack.web.slack_response import SlackResponse
 
-from apps.app import app, SUCCESS_MESSAGE, slack_client
+from app import app, SUCCESS_MESSAGE, slack_client
 from dtos.slack.book import Book
 
 client = TestClient(app)
@@ -81,8 +81,8 @@ class TestBookSubmission:
     async def test_submit_book_fail_by_wrong_url_1(self, submit_payload):
         submit_payload["submission"]["link"] = "htt://www.google.com"
         with (
-            patch("apps.app.slack_client.users_profile_get") as mock_user_profile,
-            patch("apps.app.slack_client.chat_postMessage") as mock_post_message,
+            patch("app.slack_client.users_profile_get") as mock_user_profile,
+            patch("app.slack_client.chat_postMessage") as mock_post_message,
         ):
             response = client.post(
                 "/submit-book/",
@@ -99,8 +99,8 @@ class TestBookSubmission:
     async def test_submit_book_fail_by_wrong_url_2(self, submit_payload):
         submit_payload["submission"]["link"] = "http://.google.com"
         with (
-            patch("apps.app.slack_client.users_profile_get") as mock_user_profile,
-            patch("apps.app.slack_client.chat_postMessage") as mock_post_message,
+            patch("app.slack_client.users_profile_get") as mock_user_profile,
+            patch("app.slack_client.chat_postMessage") as mock_post_message,
         ):
             response = client.post(
                 "/submit-book/",
@@ -117,7 +117,7 @@ class TestBookSubmission:
     async def test_submit_book_succeed(self, submit_payload, user_profile_success_data, chat_post_success_data):
         with (
             patch(
-                "apps.app.slack_client.users_profile_get",
+                "app.slack_client.users_profile_get",
                 AsyncMock(
                     return_value=SlackResponse(
                         client=slack_client,
@@ -131,7 +131,7 @@ class TestBookSubmission:
                 ),
             ) as mock_user_profile,
             patch(
-                "apps.app.slack_client.chat_postMessage",
+                "app.slack_client.chat_postMessage",
                 AsyncMock(
                     return_value=SlackResponse(
                         client=slack_client,
@@ -144,7 +144,7 @@ class TestBookSubmission:
                     )
                 ),
             ) as mock_post_message,
-            patch("apps.app.post_book_to_notion", AsyncMock(return_value=True)) as mock_post_notion,
+            patch("app.post_book_to_notion", AsyncMock(return_value=True)) as mock_post_notion,
         ):
             response = client.post(
                 "/submit-book/",
@@ -173,7 +173,7 @@ class TestBookSubmission:
         # Given: 노션 저장 실패.
         with (
             patch(
-                "apps.app.slack_client.users_profile_get",
+                "app.slack_client.users_profile_get",
                 AsyncMock(
                     return_value=SlackResponse(
                         client=slack_client,
@@ -187,7 +187,7 @@ class TestBookSubmission:
                 ),
             ) as mock_user_profile,
             patch(
-                "apps.app.slack_client.chat_postMessage",
+                "app.slack_client.chat_postMessage",
                 AsyncMock(
                     return_value=SlackResponse(
                         client=slack_client,
@@ -200,7 +200,7 @@ class TestBookSubmission:
                     )
                 ),
             ) as mock_post_message,
-            patch("apps.app.post_book_to_notion", AsyncMock(return_value=False)),
+            patch("app.post_book_to_notion", AsyncMock(return_value=False)),
         ):
             response = client.post(
                 "/submit-book/",

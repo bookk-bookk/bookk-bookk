@@ -7,7 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from slack.web.slack_response import SlackResponse
 
-from apps.app import app, slack_client
+from app import app, slack_client
 
 client = TestClient(app)
 
@@ -154,9 +154,8 @@ def mock_uuid():
 @pytest.mark.asyncio
 class TestOpenForm:
     async def test_open_form_succeed(self, dialog_form_data, dialog_format, mock_uuid):
-
         with patch(
-            "apps.app.slack_client.dialog_open",
+            "app.slack_client.dialog_open",
             AsyncMock(
                 return_value=SlackResponse(
                     client=slack_client,
@@ -178,7 +177,7 @@ class TestOpenForm:
 
     async def test_open_form_fail(self, dialog_form_data, dialog_format, mock_uuid):
         with patch(
-            "apps.app.slack_client.dialog_open",
+            "app.slack_client.dialog_open",
             AsyncMock(
                 return_value=SlackResponse(
                     client=slack_client,

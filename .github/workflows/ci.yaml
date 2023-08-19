@@ -44,5 +44,6 @@ jobs:
       env:
         NOTION_PAGE_URL: ${{ secrets.NOTION_SECRET_KEY }}
         NOTION_TOKEN_V2: ${{ secrets.NOTION_DATABASE_ID }}
+        PYTHONPATH: apps
       run: |
         poetry run pytest -vv --cache-clear

@@ -8,9 +8,9 @@ from slack import WebClient
 from starlette.background import BackgroundTasks
 from starlette.requests import Request
 
-from helper import post_book_to_notion
 from dtos.slack.book import UserProfileResponse, SlackResponse, SubmitRequestPayload, Book
 from dtos.slack.dialog import Dialog, DialogElement
+from helper import post_book_to_notion
 from settings import settings
 
 app = FastAPI()
