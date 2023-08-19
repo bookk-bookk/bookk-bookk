@@ -9,8 +9,8 @@ from starlette.background import BackgroundTasks
 from starlette.requests import Request
 
 from helper import post_book_to_notion
-from forms.book import UserProfileResponse, SlackResponse, SubmitRequestPayload
-from forms.dialog import Dialog, DialogElement
+from dtos.book import UserProfileResponse, SlackResponse, SubmitRequestPayload
+from dtos.dialog import Dialog, DialogElement
 from settings import settings
 
 app = FastAPI()

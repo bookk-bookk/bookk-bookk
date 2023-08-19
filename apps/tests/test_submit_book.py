@@ -1,14 +1,13 @@
 import json
 from asyncio import Future
 from http import HTTPStatus
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest  # type: ignore
-from asynctest import patch
 from fastapi.testclient import TestClient
 
 from apps.app import app, slack_client, SUCCESS_MESSAGE
-from apps.forms.book import Book
+from apps.dtos.book import Book
 from apps.tests.common import MockSlackResponse
 
 client = TestClient(app)
