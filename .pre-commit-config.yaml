@@ -10,19 +10,19 @@ repos:
     -   id: check-added-large-files
 
 -   repo: https://github.com/psf/black
-    rev: 19.10b0
+    rev: 23.7.0
     hooks:
       - id: black
         name: Formatting python code with black
-        language_version: python3.7
+        language_version: python3.9
         args: [--line-length=120]
 
 -   repo: https://github.com/PyCQA/flake8
-    rev: 3.8.2
+    rev: 6.1.0
     hooks:
       - id: flake8
         name: Inspect python code with flake8
-        language_version: python3.7
+        language_version: python3.9
         args: [--ignore=E501, --max-complexity=10]
 
 -   repo: local

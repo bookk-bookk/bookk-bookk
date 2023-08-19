@@ -1,30 +1,15 @@
 import json
-from asyncio import Future
 from http import HTTPStatus
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch, AsyncMock
 
-import pytest  # type: ignore
+import pytest
 from fastapi.testclient import TestClient
+from slack.web.slack_response import SlackResponse
 
-from apps.app import app, slack_client, SUCCESS_MESSAGE
+from apps.app import app, SUCCESS_MESSAGE, slack_client
 from dtos.slack.book import Book
-from apps.tests.common import MockSlackResponse
 
 client = TestClient(app)
-
-
-@pytest.fixture
-def mock_user_profile_get(user_profile):
-    f = Future()
-    f.set_result(user_profile)
-    return f
-
-
-@pytest.fixture
-def mock_post_message(post_result):
-    f = Future()
-    f.set_result(post_result)
-    return f
 
 
 @pytest.fixture
@@ -47,8 +32,9 @@ def submit_payload():
     }
 
 
-USER_PROFILE_SUCCESS_BODY = MockSlackResponse(
-    data={
+@pytest.fixture
+def user_profile_success_data():
+    return {
         "ok": True,
         "profile": {
             "avatar_hash": "ge3b51ca72de",
@@ -70,11 +56,11 @@ USER_PROFILE_SUCCESS_BODY = MockSlackResponse(
             "team": "T012AB3C4",
         },
     }
-)
 
 
-POST_MESSAGE_SUCCESS_BODY = MockSlackResponse(
-    data={
+@pytest.fixture
+def chat_post_success_data():
+    return {
         "ok": True,
         "channel": "C1H9RESGL",
         "ts": "1503435956.000247",
@@ -88,99 +74,143 @@ POST_MESSAGE_SUCCESS_BODY = MockSlackResponse(
             "ts": "1503435956.000247",
         },
     }
-)
 
 
-USER_PROFILE_FAIL_BODY = MockSlackResponse(data={"ok": False, "error": "user_not_found"})
+@pytest.mark.asyncio
+class TestBookSubmission:
+    async def test_submit_book_fail_by_wrong_url_1(self, submit_payload):
+        submit_payload["submission"]["link"] = "htt://www.google.com"
+        with (
+            patch("apps.app.slack_client.users_profile_get") as mock_user_profile,
+            patch("apps.app.slack_client.chat_postMessage") as mock_post_message,
+        ):
+            response = client.post(
+                "/submit-book/",
+                data={"payload": json.dumps(submit_payload)},
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
 
-POST_MESSAGE_FAIL_BODY = MockSlackResponse(data={"ok": False, "error": "too_many_attachments"})
+        assert response.status_code == HTTPStatus.OK
+        assert response.json() == {"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}
 
+        mock_user_profile.assert_not_called()
+        mock_post_message.assert_not_called()
 
-def test_submit_book_fail_by_wrong_url_1(mocker, submit_payload):
-    mocker.patch("app.slack_client.users_profile_get")
-    mocker.patch("app.slack_client.chat_postMessage")
+    async def test_submit_book_fail_by_wrong_url_2(self, submit_payload):
+        submit_payload["submission"]["link"] = "http://.google.com"
+        with (
+            patch("apps.app.slack_client.users_profile_get") as mock_user_profile,
+            patch("apps.app.slack_client.chat_postMessage") as mock_post_message,
+        ):
+            response = client.post(
+                "/submit-book/",
+                data={"payload": json.dumps(submit_payload)},
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
 
-    submit_payload["submission"]["link"] = "htt://www.google.com"
-    response = client.post(
-        "/submit-book/",
-        data={"payload": json.dumps(submit_payload)},
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-    )
+        assert response.status_code == HTTPStatus.OK
+        assert response.json() == {"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}
 
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == {"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}
+        mock_user_profile.assert_not_called()
+        mock_post_message.assert_not_called()
 
-    slack_client.users_profile_get.assert_not_called()
-    slack_client.chat_postMessage.assert_not_called()
+    async def test_submit_book_succeed(self, submit_payload, user_profile_success_data, chat_post_success_data):
+        with (
+            patch(
+                "apps.app.slack_client.users_profile_get",
+                AsyncMock(
+                    return_value=SlackResponse(
+                        client=slack_client,
+                        http_verb="http",
+                        api_url="url",
+                        data=user_profile_success_data,
+                        headers={},
+                        req_args={},
+                        status_code=int(HTTPStatus.OK),
+                    )
+                ),
+            ) as mock_user_profile,
+            patch(
+                "apps.app.slack_client.chat_postMessage",
+                AsyncMock(
+                    return_value=SlackResponse(
+                        client=slack_client,
+                        http_verb="http",
+                        api_url="url",
+                        data=chat_post_success_data,
+                        headers={},
+                        req_args={},
+                        status_code=int(HTTPStatus.OK),
+                    )
+                ),
+            ) as mock_post_message,
+            patch("apps.app.post_book_to_notion", AsyncMock(return_value=True)) as mock_post_notion,
+        ):
+            response = client.post(
+                "/submit-book/",
+                data={"payload": json.dumps(submit_payload)},
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
 
+        assert response.status_code == HTTPStatus.OK
+        assert not response.content
 
-def test_submit_book_fail_by_wrong_url_2(mocker, submit_payload):
-    mocker.patch("app.slack_client.users_profile_get")
-    mocker.patch("app.slack_client.chat_postMessage")
-
-    submit_payload["submission"]["link"] = "://www.google.com"
-    response = client.post(
-        "/submit-book/",
-        data={"payload": json.dumps(submit_payload)},
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-    )
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == {"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}
-
-    slack_client.users_profile_get.assert_not_called()
-    slack_client.chat_postMessage.assert_not_called()
-
-
-@pytest.mark.parametrize("user_profile", [USER_PROFILE_SUCCESS_BODY])
-@pytest.mark.parametrize("post_result", [POST_MESSAGE_SUCCESS_BODY])
-def test_submit_book_succeed(mocker, submit_payload, mock_user_profile_get, mock_post_message):
-    mocker.patch("app.slack_client.users_profile_get", MagicMock(return_value=mock_user_profile_get))
-    mocker.patch("app.slack_client.chat_postMessage", MagicMock(return_value=mock_post_message))
-
-    with patch("app.post_book_to_notion") as mock_post_notion:
-        response = client.post(
-            "/submit-book/",
-            data={"payload": json.dumps(submit_payload)},
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        mock_user_profile.assert_called_once_with(user=submit_payload["user"]["id"])
+        mock_post_message.assert_called_once_with(
+            text=SUCCESS_MESSAGE.format(
+                **submit_payload["submission"],
+                recommender=user_profile_success_data["profile"]["real_name"],
+            ),
+            channel=submit_payload["channel"]["id"],
+        )
+        mock_post_notion.assert_called_once_with(
+            Book(**submit_payload["submission"], recommender=user_profile_success_data["profile"]["real_name"]),
         )
 
-    assert response.status_code == HTTPStatus.OK
-    assert not response.content
+    async def test_submit_book_fail_to_post_message(
+        self, submit_payload, user_profile_success_data, chat_post_success_data
+    ):
+        # Given: 노션 저장 실패.
+        with (
+            patch(
+                "apps.app.slack_client.users_profile_get",
+                AsyncMock(
+                    return_value=SlackResponse(
+                        client=slack_client,
+                        http_verb="http",
+                        api_url="url",
+                        data=user_profile_success_data,
+                        headers={},
+                        req_args={},
+                        status_code=int(HTTPStatus.OK),
+                    )
+                ),
+            ) as mock_user_profile,
+            patch(
+                "apps.app.slack_client.chat_postMessage",
+                AsyncMock(
+                    return_value=SlackResponse(
+                        client=slack_client,
+                        http_verb="http",
+                        api_url="url",
+                        data=chat_post_success_data,
+                        headers={},
+                        req_args={},
+                        status_code=int(HTTPStatus.OK),
+                    )
+                ),
+            ) as mock_post_message,
+            patch("apps.app.post_book_to_notion", AsyncMock(return_value=False)),
+        ):
+            response = client.post(
+                "/submit-book/",
+                data={"payload": json.dumps(submit_payload)},
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
 
-    slack_client.users_profile_get.assert_called_once_with(user=submit_payload["user"]["id"])
-    slack_client.chat_postMessage.assert_called_once_with(
-        text=SUCCESS_MESSAGE.format(
-            **submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY.data["profile"]["real_name"],
-        ),
-        channel=submit_payload["channel"]["id"],
-    )
-    mock_post_notion.assert_called_once_with(
-        Book(**submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY.data["profile"]["real_name"]),
-    )
+        # Then: 슬랙 채널에 알림 메세지 전송하지 않아야 함.
+        assert response.status_code == HTTPStatus.OK
+        assert response.content == b"Failed to posting to notion"
 
-
-@pytest.mark.parametrize("user_profile", [USER_PROFILE_SUCCESS_BODY])
-@pytest.mark.parametrize("post_result", [POST_MESSAGE_FAIL_BODY])
-def test_submit_book_fail_to_post_message(mocker, submit_payload, mock_user_profile_get, mock_post_message):
-    mocker.patch("app.slack_client.users_profile_get", MagicMock(return_value=mock_user_profile_get))
-    mocker.patch("app.slack_client.chat_postMessage", MagicMock(return_value=mock_post_message))
-
-    with patch("app.post_book_to_notion") as mock_post_notion:
-        response = client.post(
-            "/submit-book/",
-            data={"payload": json.dumps(submit_payload)},
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-        )
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.content.decode() == POST_MESSAGE_FAIL_BODY.data["error"]
-
-    slack_client.users_profile_get.assert_called_once_with(user=submit_payload["user"]["id"])
-    slack_client.chat_postMessage.assert_called_once_with(
-        text=SUCCESS_MESSAGE.format(
-            **submit_payload["submission"], recommender=USER_PROFILE_SUCCESS_BODY.data["profile"]["real_name"],
-        ),
-        channel=submit_payload["channel"]["id"],
-    )
-    mock_post_notion.assert_not_called()
+        mock_user_profile.assert_called_once_with(user=submit_payload["user"]["id"])
+        mock_post_message.assert_not_called()
