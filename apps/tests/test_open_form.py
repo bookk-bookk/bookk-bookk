@@ -12,9 +12,6 @@ from apps.app import app, slack_client
 client = TestClient(app)
 
 
-BASE_URL_FOR_TEST = "http://127.0.0.1:9999"
-
-
 @pytest.fixture
 def dialog_format():
     # fmt: off
