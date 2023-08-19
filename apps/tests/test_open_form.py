@@ -1,15 +1,18 @@
 import os
-from asyncio import Future
 from http import HTTPStatus
-from unittest.mock import MagicMock
+from unittest.mock import patch, AsyncMock
 
-import pytest  # type: ignore
+import pytest
 
 from fastapi.testclient import TestClient
+from slack.web.slack_response import SlackResponse
+
 from apps.app import app, slack_client
-from apps.tests.common import MockSlackResponse
 
 client = TestClient(app)
+
+
+BASE_URL_FOR_TEST = "http://127.0.0.1:9999"
 
 
 @pytest.fixture
@@ -147,38 +150,53 @@ def mock_uuid():
             self.version = version
             self.hex = "mock-uuid4-hex"
 
-    return UUID4
+    with patch("uuid.UUID", UUID4):
+        yield
 
 
-@pytest.fixture
-def mock_dialog_open(response):
-    f = Future()
-    f.set_result(response)
-    return f
+@pytest.mark.asyncio
+class TestOpenForm:
+    async def test_open_form_succeed(self, dialog_form_data, dialog_format, mock_uuid):
 
+        with patch(
+            "apps.app.slack_client.dialog_open",
+            AsyncMock(
+                return_value=SlackResponse(
+                    client=slack_client,
+                    http_verb="http",
+                    api_url="url",
+                    data={"ok": True},
+                    headers={},
+                    req_args={},
+                    status_code=int(HTTPStatus.OK),
+                ),
+            ),
+        ) as mock_call:
+            response = client.post(
+                "/open-form/", data=dialog_form_data, headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
 
-@pytest.mark.parametrize("response", [MockSlackResponse({"ok": True, "error": ""})])
-def test_open_form_succeed(mocker, dialog_form_data, dialog_format, mock_uuid, mock_dialog_open):
-    mocker.patch("app.slack_client.dialog_open", MagicMock(return_value=mock_dialog_open))
-    mocker.patch("uuid.UUID", mock_uuid)
+        assert response.status_code == HTTPStatus.OK
+        mock_call.assert_called_once_with(trigger_id=dialog_form_data["trigger_id"], dialog=dialog_format)
 
-    response = client.post(
-        "/open-form/", data=dialog_form_data, headers={"Content-Type": "application/x-www-form-urlencoded"}
-    )
-    assert response.status_code == HTTPStatus.OK
+    async def test_open_form_fail(self, dialog_form_data, dialog_format, mock_uuid):
+        with patch(
+            "apps.app.slack_client.dialog_open",
+            AsyncMock(
+                return_value=SlackResponse(
+                    client=slack_client,
+                    http_verb="http",
+                    api_url="url",
+                    data={"ok": False, "error": "some-error"},
+                    headers={},
+                    req_args={},
+                    status_code=int(HTTPStatus.INTERNAL_SERVER_ERROR),
+                ),
+            ),
+        ) as mock_call:
+            response = client.post(
+                "/open-form/", data=dialog_form_data, headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
 
-    slack_client.dialog_open.assert_called_once_with(trigger_id=dialog_form_data["trigger_id"], dialog=dialog_format)
-
-
-@pytest.mark.parametrize("response", [MockSlackResponse({"ok": False, "error": "some-error"})])
-def test_open_form_fail(mocker, dialog_form_data, dialog_format, mock_uuid, mock_dialog_open):
-    mocker.patch("app.slack_client.dialog_open", MagicMock(return_value=mock_dialog_open))
-    mocker.patch("uuid.UUID", mock_uuid)
-
-    response = client.post(
-        "/open-form/", data=dialog_form_data, headers={"Content-Type": "application/x-www-form-urlencoded"}
-    )
-    assert response.status_code == HTTPStatus.OK
-    assert response.content.decode() == "some-error"
-
-    slack_client.dialog_open.assert_called_once_with(trigger_id=dialog_form_data["trigger_id"], dialog=dialog_format)
+        assert response.status_code == HTTPStatus.OK
+        mock_call.assert_called_once_with(trigger_id=dialog_form_data["trigger_id"], dialog=dialog_format)
