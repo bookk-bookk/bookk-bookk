@@ -5,10 +5,6 @@ from apps.dtos.notion.database import Database
 from apps.dtos.notion.image_block import ImageBlock
 
 
-def replace_underscore_with_space(field: str):
-    return field.replace("_", " ")
-
-
 class BookSubmissionProperties(BaseModel):
 
     title: Title
