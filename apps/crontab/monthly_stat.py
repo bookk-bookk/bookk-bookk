@@ -4,9 +4,7 @@ import logging
 from typing import Optional
 
 from slack import WebClient
-from slack.web.slack_response import SlackResponse
 
-from helper import get_books_from_notion
 from settings import settings
 
 
@@ -20,14 +18,15 @@ BOOK_EMOJI = ":bookkbookk:"
 MAX_RANK = 3
 
 
-def get_books_posted_in_last_month():
-    yesterday = datetime.today() - timedelta(days=1)
-    start_date = datetime(yesterday.year, yesterday.month, 1)
-    end_date = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
-
-    books = get_books_from_notion()
-
-    return [b for b in books if start_date <= b.created_at <= end_date]
+# TODO: 공식 노션 API 사용
+# def get_books_posted_in_last_month():
+#     yesterday = datetime.today() - timedelta(days=1)
+#     start_date = datetime(yesterday.year, yesterday.month, 1)
+#     end_date = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
+#
+#     books = get_books_from_notion()
+#
+#     return [b for b in books if start_date <= b.created_at <= end_date]
 
 
 def get_stat_message(books):
@@ -75,19 +74,19 @@ def get_best_recommenders_message(books):
     return "\n".join(message)
 
 
-def post_message_to_slack_channel():
-    books = get_books_posted_in_last_month()
-    stat_msg = get_stat_message(books)
-    best_recommender_msg = get_best_recommenders_message(books)
+# def post_message_to_slack_channel():
+#     books = get_books_posted_in_last_month()
+#     stat_msg = get_stat_message(books)
+#     best_recommender_msg = get_best_recommenders_message(books)
+#
+#     final_msg = "\n".join([stat_msg, "\n", best_recommender_msg])
+#
+#     post_message_res: SlackResponse = slack_client.chat_postMessage(  # type: ignore
+#         channel=settings.books_channel, text=final_msg,
+#     )
+#     if not post_message_res["ok"]:
+#         logger.error(f"######## failed to post monthly-stat message: {post_message_res['error']} #######")
+#
 
-    final_msg = "\n".join([stat_msg, "\n", best_recommender_msg])
-
-    post_message_res: SlackResponse = slack_client.chat_postMessage(  # type: ignore
-        channel=settings.books_channel, text=final_msg,
-    )
-    if not post_message_res["ok"]:
-        logger.error(f"######## failed to post monthly-stat message: {post_message_res['error']} #######")
-
-
-if datetime.today().day == 1:
-    post_message_to_slack_channel()
+# if datetime.today().day == 1:
+#     post_message_to_slack_channel()

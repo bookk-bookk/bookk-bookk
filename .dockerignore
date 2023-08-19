@@ -1,9 +1,0 @@
-.gitignore
-.pre-commit-config.yaml
-prepare_commit_msg.py
-README.md
-tests/
-.pytest_cache/
-.mypy_cache/
-.env
-.circleci/
