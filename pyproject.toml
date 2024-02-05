@@ -8,7 +8,7 @@ packages = [{include = "bookk_bookk"}]
 
 [tool.poetry.dependencies]
 python = "3.9.16"
-fastapi = "0.101.0"
+fastapi = "0.109.1"
 uvicorn = "0.23.2"
 slackclient = "2.9.4"
 python-dotenv = "^1.0.0"
