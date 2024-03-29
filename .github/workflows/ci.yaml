@@ -9,7 +9,7 @@ jobs:
     - name: Checkout Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.9.16
+        python-version: 3.9.18
         architecture: 'x64'
 
     - name: Get Python Version
