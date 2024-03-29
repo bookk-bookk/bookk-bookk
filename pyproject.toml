@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "bookk_bookk"}]
 
 [tool.poetry.dependencies]
-python = "3.9.16"
+python = "3.9.18"
 fastapi = "0.101.0"
 uvicorn = "0.23.2"
 slackclient = "2.9.4"
