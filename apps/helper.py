@@ -33,7 +33,7 @@ async def get_og_tags(book_link: str) -> dict:
     async with httpx.AsyncClient() as client:
         response = await client.get(
             OPEN_GRAPH_BASE_URL.format(book_link=quote_plus(book_link, encoding="UTF-8")),
-            params={"app_id": settings.og_app_id},  # type: ignore
+            params={"app_id": settings.og_app_id},
             timeout=60,
         )
     return response.json()
