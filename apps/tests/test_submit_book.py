@@ -6,9 +6,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastapi.testclient import TestClient
 from slack.web.slack_response import SlackResponse
-
+from dtos.internal.book import Book
 from app import app, SUCCESS_MESSAGE, slack_client
-from dtos.slack.book import Book
 
 client = TestClient(app)
 
@@ -20,7 +19,7 @@ def book_submit_data() -> Callable:
             "type": "dialog_submission",
             "submission": {
                 "category": "경제일반",
-                "link": bookstore_url,
+                "bookstore_url": bookstore_url,
                 "recommend_reason": "죽도록 일해서 돈을 벌고, 아끼고, 모으는 것만으로는 절대 젊어서 부자가 될 수 없다고 말하며, ‘젊어서 부자가 되는 길’을 공개한다.",
             },
             "callback_id": "bookk-bookk",
@@ -112,7 +111,7 @@ class TestBookSubmission:
             )
 
         assert response.status_code == HTTPStatus.OK
-        assert response.json() == {"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}
+        assert response.json() == {"errors": [{"name": "bookstore_url", "error": "유효하지 않은 URL입니다."}]}
 
         mock_user_profile.assert_not_called()
         mock_post_message.assert_not_called()
@@ -131,7 +130,7 @@ class TestBookSubmission:
             )
 
         assert response.status_code == HTTPStatus.OK
-        assert response.json() == {"errors": [{"name": "link", "error": "첨부 가능한 서점 링크는 리디북스/예스24 입니다."}]}
+        assert response.json() == {"errors": [{"name": "bookstore_url", "error": "첨부 가능한 서점 링크는 리디북스/예스24 입니다."}]}
 
         mock_user_profile.assert_not_called()
         mock_post_message.assert_not_called()

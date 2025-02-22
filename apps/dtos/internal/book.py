@@ -1,15 +1,7 @@
 from enum import Enum
-from re import match
 from typing import Optional
-from urllib.parse import urlparse
 
 from pydantic import BaseModel
-
-
-LINK_REGEX = (
-    r"^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]"
-    r"+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
-)
 
 
 class BookCategories(Enum):
@@ -27,16 +19,11 @@ class BookCategories(Enum):
     HEALTH_HOBBY = "건강/취미", ("생활습관", "음식/요리", "운동/스포츠", "기타")
 
 
-class BookStoreDomain(str, Enum):
-    RIDI = "ridibooks.com"
-    YES_TWENTY_FOUR = "yes24.com"
-
-
 class Book(BaseModel):
     category: str
-    link: str
+    bookstore_url: str
     recommend_reason: str
-    recommender: Optional[str] = None
+    recommender: str
 
     @property
     def parent_category(self) -> Optional[str]:
@@ -46,42 +33,3 @@ class Book(BaseModel):
                 if s == self.category:
                     return main
         return None
-
-    def validate_link(self) -> Optional[str]:
-        matched = match(LINK_REGEX, self.link)
-        if not matched:
-            return None
-
-        self.link = self.link.strip()
-        return self.link
-
-    def able_to_get_opengraph_tags(self) -> bool:
-        parsed_link = urlparse(self.link)
-        for domain in BookStoreDomain:
-            if domain in parsed_link.netloc or domain in parsed_link.path:
-                return True
-        return False
-
-
-class SlackResponse(BaseModel):
-    ok: bool
-    error: Optional[str]
-
-
-class UserProfile(BaseModel):
-    real_name: str
-
-
-class UserProfileResponse(SlackResponse):
-    profile: UserProfile
-
-
-class Identifier(BaseModel):
-    id: str
-
-
-class SubmitRequestPayload(BaseModel):
-    type: str
-    submission: Book
-    user: Identifier
-    channel: Identifier
