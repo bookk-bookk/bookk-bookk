@@ -58,7 +58,7 @@ async def open_form(trigger_id: Annotated[str, Form()]) -> Response:
 
 @app.post("/submit-book/")
 async def submit_book(request: Request, background_tasks: BackgroundTasks) -> Response:
-    # submit_book 파라미터에 직접 정의한 pydantic 모델 가지고 타입 어노테이션이 안되서 form 파싱 하는 것으로 대체.
+    # json 형태의 폼 데이터는 pydantic 모델 타입으로 어노테이션 했을 때 장점을 누리기 어려우므로 Request 타입으로 어노테이션
     form = await request.form()
     payload: SubmitRequestPayload = SubmitRequestPayload.parse_obj(json.loads(form.get("payload")))
     if payload.type != DIALOG_SUBMIT_DONE:
