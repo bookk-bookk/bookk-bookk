@@ -55,9 +55,8 @@ class Book(BaseModel):
         self.link = self.link.strip()
         return self.link
 
-    @staticmethod
-    def able_to_get_opengraph_tags(link) -> bool:
-        parsed_link = urlparse(link)
+    def able_to_get_opengraph_tags(self) -> bool:
+        parsed_link = urlparse(self.link)
         for domain in BookStoreDomain:
             if domain in parsed_link.netloc or domain in parsed_link.path:
                 return True

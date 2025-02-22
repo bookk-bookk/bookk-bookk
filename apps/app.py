@@ -71,6 +71,12 @@ async def submit_book(request: Request, background_tasks: BackgroundTasks) -> Re
             content=json.dumps({"errors": [{"name": "link", "error": "유효하지 않은 URL입니다."}]}),
         )
 
+    if not book.able_to_get_opengraph_tags():
+        return Response(
+            headers={"content-type": "application/json"},
+            content=json.dumps({"errors": [{"name": "link", "error": "첨부 가능한 서점 링크는 리디북스/예스24 입니다."}]}),
+        )
+
     user_profile_res: UserProfileResponse = UserProfileResponse.parse_obj(
         (await slack_client.users_profile_get(user=payload.user.id)).data,
     )
