@@ -19,3 +19,8 @@ class BookCategories(Enum):
 class BookStoreDomain(str, Enum):
     RIDI = "ridibooks.com"
     YES_TWENTY_FOUR = "yes24.com"
+
+
+class BookStoreImageDomain(str, Enum):
+    RIDI = "img.ridicdn.net"
+    YES_TWENTY_FOUR = "image.yes24.com"
