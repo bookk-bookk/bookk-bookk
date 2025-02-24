@@ -1,20 +1,16 @@
-from enum import Enum
 from re import match
 from typing import Optional
 from urllib.parse import urlparse
 
 from pydantic import BaseModel
 
+from enums import BookStoreDomain
 
-LINK_REGEX = (
+
+_LINK_REGEX = (
     r"^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]"
     r"+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
 )
-
-
-class BookStoreDomain(str, Enum):
-    RIDI = "ridibooks.com"
-    YES_TWENTY_FOUR = "yes24.com"
 
 
 class BookSubmission(BaseModel):
@@ -23,7 +19,7 @@ class BookSubmission(BaseModel):
     recommend_reason: str
 
     def validate_link(self) -> Optional[str]:
-        matched = match(LINK_REGEX, self.bookstore_url)
+        matched = match(_LINK_REGEX, self.bookstore_url)
         if not matched:
             return None
 
