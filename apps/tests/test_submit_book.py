@@ -147,8 +147,8 @@ class TestBookSubmission:
                 "app.slack_client.chat_postMessage",
                 AsyncMock(return_value=ok_response_from_slack(chat_post_success_data)),
             ),
-            patch("helper.get_og_tags", AsyncMock(return_value=yes24_opengraph_tags)),
-            patch("helper.httpx.AsyncClient.post") as mock_post_notion,
+            patch("functions.get_og_tags", AsyncMock(return_value=yes24_opengraph_tags)),
+            patch("functions.httpx.AsyncClient.post") as mock_post_notion,
         ):
             yes24_url = "https://www.yes24.com/Product/Goods/106369008"
             successful_submit_data = book_submit_data(bookstore_url=yes24_url)
@@ -222,8 +222,8 @@ class TestBookSubmission:
                 "app.slack_client.chat_postMessage",
                 AsyncMock(return_value=ok_response_from_slack(chat_post_success_data)),
             ),
-            patch("helper.get_og_tags", AsyncMock(return_value=ridibooks_opengraph_tags)),
-            patch("helper.httpx.AsyncClient.post") as mock_post_notion,
+            patch("functions.get_og_tags", AsyncMock(return_value=ridibooks_opengraph_tags)),
+            patch("functions.httpx.AsyncClient.post") as mock_post_notion,
         ):
             yes24_url = "https://ridibooks.com/books/1354000126"
             successful_submit_data = book_submit_data(bookstore_url=yes24_url)

@@ -19,6 +19,7 @@ from dtos.notion.text import (
     Recommender,
     RecommendReason,
 )
+from dtos.opengraph import OpenGraphIOResponse, OpenGraph
 from settings import settings
 from dtos.internal.book import Book
 
@@ -41,12 +42,7 @@ async def get_og_tags(book_link: str) -> dict:
 
 async def post_book_to_notion(book: Book) -> bool:
     response = await get_og_tags(book.bookstore_url)
-    try:
-        og_tags = response["openGraph"]
-    except KeyError:
-        logger.error("Failed to parse OpenGraph::{}".format(response))
-        return False
-
+    og: OpenGraph = (OpenGraphIOResponse.model_validate(response)).open_graph
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(
@@ -55,7 +51,7 @@ async def post_book_to_notion(book: Book) -> bool:
                 json=BookSubmission(
                     parent=Database(),
                     properties=BookSubmissionProperties(
-                        title=Title(title=[TextContent(text=Content(content=og_tags["title"]))]),
+                        title=Title(title=[TextContent(text=Content(content=og.title))]),
                         URL=BookUrl(url=book.bookstore_url),
                         category=Category(
                             multi_select=[CategoryName(name=book.category), CategoryName(name=book.parent_category)],
@@ -65,7 +61,7 @@ async def post_book_to_notion(book: Book) -> bool:
                             rich_text=[TextContent(text=Content(content=book.recommend_reason))],
                         ),
                     ),
-                    children=[ImageBlock(image=Image(external=ImageUrl(url=og_tags["image"]["url"])))],
+                    children=[ImageBlock(image=Image(external=ImageUrl(url=og.image.url)))],
                 ).model_dump(),
             )
         except HTTPError as e:
