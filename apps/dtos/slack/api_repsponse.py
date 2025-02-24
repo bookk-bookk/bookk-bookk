@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class CommonResponse(BaseModel):
     ok: bool
-    error: Optional[str]
+    error: Optional[str] = None
 
 
 class UserProfile(BaseModel):

@@ -32,7 +32,7 @@ SUCCESS_MESSAGE: str = """
 
 @app.post("/open-form/")
 async def open_form(trigger_id: Annotated[str, Form()]) -> Response:
-    response = CommonResponse.parse_obj(
+    response = CommonResponse.model_validate(
         (
             await slack_client.dialog_open(  # type: ignore
                 dialog=Dialog(
@@ -48,7 +48,7 @@ async def open_form(trigger_id: Annotated[str, Form()]) -> Response:
                         DialogElement(label="도서링크", name="bookstore_url", type="text", subtype="url"),
                         DialogElement(label="추천이유", name="recommend_reason", type="textarea"),
                     ],
-                ).dict(),
+                ).model_dump(),
                 trigger_id=trigger_id,
             )
         ).data,
@@ -63,7 +63,7 @@ async def open_form(trigger_id: Annotated[str, Form()]) -> Response:
 async def submit_book(request: Request, background_tasks: BackgroundTasks) -> Response:
     # json 형태의 폼 데이터는 pydantic 모델 타입으로 어노테이션 했을 때 장점을 누리기 어려우므로 Request 타입으로 어노테이션
     form = await request.form()
-    payload: BookSubmitPayload = BookSubmitPayload.parse_obj(json.loads(form.get("payload")))
+    payload: BookSubmitPayload = BookSubmitPayload.model_validate(json.loads(form.get("payload")))
     if payload.type != DIALOG_SUBMIT_DONE:
         return Response(status_code=HTTPStatus.BAD_REQUEST)
 
@@ -79,7 +79,7 @@ async def submit_book(request: Request, background_tasks: BackgroundTasks) -> Re
             content=json.dumps({"errors": [{"name": "bookstore_url", "error": "첨부 가능한 서점 링크는 리디북스/예스24 입니다."}]}),
         )
 
-    user_profile_res: UserProfileResponse = UserProfileResponse.parse_obj(
+    user_profile_res: UserProfileResponse = UserProfileResponse.model_validate(
         (await slack_client.users_profile_get(user=payload.user.id)).data,
     )
     book: Book = Book(
@@ -89,9 +89,11 @@ async def submit_book(request: Request, background_tasks: BackgroundTasks) -> Re
         recommender=user_profile_res.profile.real_name,
     )
 
-    post_message_res = CommonResponse.parse_obj(
+    post_message_res = CommonResponse.model_validate(
         (
-            await slack_client.chat_postMessage(channel=payload.channel.id, text=SUCCESS_MESSAGE.format(**book.dict()))
+            await slack_client.chat_postMessage(
+                channel=payload.channel.id, text=SUCCESS_MESSAGE.format(**book.model_dump())
+            )
         ).data,
     )
     if not post_message_res.ok:

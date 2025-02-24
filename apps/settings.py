@@ -1,14 +1,13 @@
 import os
-from typing import Optional
 
 from dotenv import load_dotenv
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    slack_api_token: Optional[str] = os.getenv("SLACK_API_TOKEN")
-    og_app_id: Optional[str] = os.getenv("OG_APP_ID")
-    books_channel: Optional[str] = os.getenv("BOOKS_CHANNEL")
+    slack_api_token: str = os.getenv("SLACK_API_TOKEN")
+    og_app_id: str = os.getenv("OG_APP_ID")
+    books_channel: str = os.getenv("BOOKS_CHANNEL")
 
     notion_secret_key: str = os.getenv("NOTION_SECRET_KEY")
     notion_database_id: str = os.getenv("NOTION_DATABASE_ID")

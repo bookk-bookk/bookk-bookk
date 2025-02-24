@@ -42,8 +42,11 @@ jobs:
 
     - name: Run Tests
       env:
-        NOTION_PAGE_URL: ${{ secrets.NOTION_SECRET_KEY }}
-        NOTION_TOKEN_V2: ${{ secrets.NOTION_DATABASE_ID }}
+        SLACK_API_TOKEN: test
+        OG_APP_ID:  test
+        BOOKS_CHANNEL: test
+        NOTION_SECRET_KEY: test
+        NOTION_DATABASE_ID: test
         PYTHONPATH: apps
       run: |
         poetry run pytest -vv --cache-clear
