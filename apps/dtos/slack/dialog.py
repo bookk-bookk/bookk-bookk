@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from dtos.slack.book import BookCategories
+from dtos.internal.book import BookCategories
 
 
 class DialogOption(BaseModel):

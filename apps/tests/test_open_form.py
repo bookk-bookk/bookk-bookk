@@ -113,7 +113,7 @@ def dialog_format():
                 ],
                 "subtype": None,
             },
-            {"label": "도서링크", "name": "link", "type": "text", "option_groups": None, "subtype": "url"},
+            {"label": "도서링크", "name": "bookstore_url", "type": "text", "option_groups": None, "subtype": "url"},
             {"label": "추천이유", "name": "recommend_reason", "type": "textarea", "option_groups": None, "subtype": None},
         ],
     }

@@ -20,7 +20,7 @@ from dtos.notion.text import (
     RecommendReason,
 )
 from settings import settings
-from dtos.slack.book import Book
+from dtos.internal.book import Book
 
 OPEN_GRAPH_BASE_URL: str = "https://opengraph.io/api/1.1/site/{book_link}"
 NOTION_API_BASE_URL = "https://api.notion.com"
@@ -40,7 +40,7 @@ async def get_og_tags(book_link: str) -> dict:
 
 
 async def post_book_to_notion(book: Book) -> bool:
-    response = await get_og_tags(book.link)
+    response = await get_og_tags(book.bookstore_url)
     try:
         og_tags = response["openGraph"]
     except KeyError:
@@ -56,7 +56,7 @@ async def post_book_to_notion(book: Book) -> bool:
                     parent=Database(),
                     properties=BookSubmissionProperties(
                         title=Title(title=[TextContent(text=Content(content=og_tags["title"]))]),
-                        URL=BookUrl(url=book.link),
+                        URL=BookUrl(url=book.bookstore_url),
                         category=Category(
                             multi_select=[CategoryName(name=book.category), CategoryName(name=book.parent_category)],
                         ),

@@ -1,11 +1,10 @@
-import enum
-import re
+from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel
 
 
-class BookCategories(enum.Enum):
+class BookCategories(Enum):
     ECONOMIC_BUSINESS = "경영/경제", ("경영일반", "경제일반", "통계/회계", "마케팅/세일즈", "기업경영/리더십", "재테크/금융/부동산")
     HUMANITY_SOCIETY = "인문/사회", ("사회일반", "인문일반", "페미니즘", "외교/정치", "인권/사회", "역사/문학")
     ART_CULTURE = "예술/문화", ("미술", "음악", "건축", "무용", "사진", "영화", "만화", "디자인")
@@ -20,17 +19,11 @@ class BookCategories(enum.Enum):
     HEALTH_HOBBY = "건강/취미", ("생활습관", "음식/요리", "운동/스포츠", "기타")
 
 
-LINK_REGEX = (
-    r"^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]"
-    r"+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
-)
-
-
 class Book(BaseModel):
     category: str
-    link: str
+    bookstore_url: str
     recommend_reason: str
-    recommender: Optional[str] = None
+    recommender: str
 
     @property
     def parent_category(self) -> Optional[str]:
@@ -40,35 +33,3 @@ class Book(BaseModel):
                 if s == self.category:
                     return main
         return None
-
-    def validate_link(self) -> Optional[str]:
-        matched = re.match(LINK_REGEX, self.link)
-        if not matched:
-            return None
-
-        self.link = self.link.strip()
-        return self.link
-
-
-class SlackResponse(BaseModel):
-    ok: bool
-    error: Optional[str]
-
-
-class UserProfile(BaseModel):
-    real_name: str
-
-
-class UserProfileResponse(SlackResponse):
-    profile: UserProfile
-
-
-class Identifier(BaseModel):
-    id: str
-
-
-class SubmitRequestPayload(BaseModel):
-    type: str
-    submission: Book
-    user: Identifier
-    channel: Identifier
