@@ -45,8 +45,8 @@ jobs:
         SLACK_API_TOKEN: ${{ vars.SLACK_API_TOKEN }}
         OG_APP_ID:  ${{ vars.OG_APP_ID }}
         BOOKS_CHANNEL: ${{ vars.BOOKS_CHANNEL }}
-        NOTION_PAGE_URL: ${{ vars.NOTION_SECRET_KEY }}
-        NOTION_TOKEN_V2: ${{ vars.NOTION_DATABASE_ID }}
+        NOTION_SECRET_KEY: ${{ vars.NOTION_SECRET_KEY }}
+        NOTION_DATABASE_ID: ${{ vars.NOTION_DATABASE_ID }}
         PYTHONPATH: apps
       run: |
         poetry run pytest -vv --cache-clear
