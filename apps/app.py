@@ -13,7 +13,7 @@ from dtos.slack.book_submission import BookSubmitPayload
 from dtos.slack.dialog import Dialog, DialogElement
 from dtos.slack.api_repsponse import CommonResponse
 from dtos.slack.api_repsponse import UserProfileResponse
-from helper import post_book_to_notion
+from functions import post_book_to_notion
 from settings import settings
 
 app = FastAPI()
