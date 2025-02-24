@@ -14,7 +14,7 @@ class BookSubmissionProperties(BaseModel):
 
     def dict(self, *args, **kwargs):
         # 노션에서 키 이름을 'recommend reason' 으로 요구
-        result = super().dict(*args, **kwargs)
+        result = super().model_dump(*args, **kwargs)
         result["recommend reason"] = result["recommend_reason"]
         del result["recommend_reason"]
         return result

@@ -15,7 +15,8 @@ python-dotenv = "^1.0.0"
 gunicorn = "22.0.0"
 httpx = "0.24.1"
 python-multipart = "0.0.18"
-pydantic = "1.10.13"
+pydantic = "2.10.0"
+pydantic-settings = "^2.8.0"
 
 
 [tool.poetry.group.dev.dependencies]
