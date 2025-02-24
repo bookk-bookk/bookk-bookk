@@ -42,11 +42,11 @@ jobs:
 
     - name: Run Tests
       env:
-        SLACK_API_TOKEN: ${{ vars.SLACK_API_TOKEN }}
-        OG_APP_ID:  ${{ vars.OG_APP_ID }}
-        BOOKS_CHANNEL: ${{ vars.BOOKS_CHANNEL }}
-        NOTION_SECRET_KEY: ${{ vars.NOTION_SECRET_KEY }}
-        NOTION_DATABASE_ID: ${{ vars.NOTION_DATABASE_ID }}
+        SLACK_API_TOKEN: test
+        OG_APP_ID:  test
+        BOOKS_CHANNEL: test
+        NOTION_SECRET_KEY: test
+        NOTION_DATABASE_ID: test
         PYTHONPATH: apps
       run: |
         poetry run pytest -vv --cache-clear
