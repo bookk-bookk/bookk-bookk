@@ -185,7 +185,7 @@ class TestBookSubmission:
                         {"type": "text", "text": {"content": user_profile_success_data["profile"]["real_name"]}}
                     ]
                 },
-                "recommend_reason": {
+                "recommend reason": {
                     "rich_text": [
                         {"type": "text", "text": {"content": successful_submit_data["submission"]["recommend_reason"]}}
                     ]
@@ -260,7 +260,7 @@ class TestBookSubmission:
                         {"type": "text", "text": {"content": user_profile_success_data["profile"]["real_name"]}}
                     ]
                 },
-                "recommend_reason": {
+                "recommend reason": {
                     "rich_text": [
                         {"type": "text", "text": {"content": successful_submit_data["submission"]["recommend_reason"]}}
                     ]
