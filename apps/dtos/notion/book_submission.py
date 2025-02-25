@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from dtos.notion.text import Title, BookUrl, Category, Recommender, RecommendReason
 from dtos.notion.database import Database
@@ -10,14 +10,7 @@ class BookSubmissionProperties(BaseModel):
     URL: BookUrl
     category: Category
     recommender: Recommender
-    recommend_reason: RecommendReason
-
-    def dict(self, *args, **kwargs):
-        # 노션에서 키 이름을 'recommend reason' 으로 요구
-        result = super().model_dump(*args, **kwargs)
-        result["recommend reason"] = result["recommend_reason"]
-        del result["recommend_reason"]
-        return result
+    recommend_reason: RecommendReason = Field(serialization_alias="recommend reason")
 
 
 class BookSubmission(BaseModel):

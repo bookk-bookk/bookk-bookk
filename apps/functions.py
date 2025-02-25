@@ -62,7 +62,7 @@ async def post_book_to_notion(book: Book) -> bool:
                         ),
                     ),
                     children=[ImageBlock(image=Image(external=ImageUrl(url=og.image.url)))],
-                ).model_dump(),
+                ).model_dump(by_alias=True),
             )
         except HTTPError as e:
             logger.error(f"exception occurred while posting notion: {e}")
